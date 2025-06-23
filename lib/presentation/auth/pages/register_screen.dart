@@ -2,30 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/core/components/custom_text_field.dart';
 import 'package:gloymoneymanagement/core/components/spaces.dart';
-import 'package:gloymoneymanagement/data/models/request/auth/login_request_model.dart';
+import 'package:gloymoneymanagement/data/models/request/auth/register_request_model.dart';
 import 'package:gloymoneymanagement/data/repository/auth_repository.dart';
-import 'package:gloymoneymanagement/presentation/auth/pages/register_screen.dart';
-import 'package:gloymoneymanagement/presentation/home/pages/home.dart';
+import 'package:gloymoneymanagement/presentation/auth/pages/login_screen.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final nameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  final AuthRepository authRepository = AuthRepository(ServiceHttpClient());
+  final authRepository = AuthRepository(ServiceHttpClient());
 
   bool isLoading = false;
   bool isShowPassword = false;
   String? errorMessage;
 
-  void handleLogin() async {
+  void handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -33,12 +33,13 @@ class _LoginScreenState extends State<LoginScreen> {
       errorMessage = null;
     });
 
-    final request = LoginRequestModel(
+    final request = RegisterRequestModel(
+      name: nameController.text.trim(),
       email: emailController.text.trim(),
       password: passwordController.text.trim(),
     );
 
-    final result = await authRepository.login(request);
+    final result = await authRepository.register(request);
 
     result.fold(
       (error) {
@@ -48,9 +49,12 @@ class _LoginScreenState extends State<LoginScreen> {
         });
       },
       (response) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Pendaftaran berhasil!")),
+        );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
         );
       },
     );
@@ -61,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -88,24 +93,23 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SpaceHeight(10),
                 Text(
-                  'Selamat Datang Kembali',
+                  'Daftar Akun GMM',
                   style: theme.textTheme.headlineSmall?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Ayok Mulai Menabung!',
-                  style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
-                ),
                 const SpaceHeight(32),
                 if (errorMessage != null)
-                  Text(
-                    errorMessage!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
+                  Text(errorMessage!, style: const TextStyle(color: Colors.red)),
                 const SpaceHeight(12),
+                CustomTextField(
+                  controller: nameController,
+                  label: 'Nama Lengkap',
+                  validator: 'Nama wajib diisi',
+                  prefixIcon: const Icon(Icons.person),
+                ),
+                const SpaceHeight(20),
                 CustomTextField(
                   controller: emailController,
                   label: 'Email',
@@ -137,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: isLoading ? null : handleLogin,
+                    onPressed: isLoading ? null : handleRegister,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: AppColors.primary800,
@@ -147,19 +151,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: isLoading
                         ? const CircularProgressIndicator(color: AppColors.primary)
-                        : const Text("Masuk", style: TextStyle(fontWeight: FontWeight.bold)),
+                        : const Text("Daftar", style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
                 const SpaceHeight(20),
                 TextButton(
                   onPressed: () {
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
                     );
                   },
                   child: const Text(
-                    "Belum punya akun? Daftar",
+                    "Sudah punya akun? Masuk",
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
