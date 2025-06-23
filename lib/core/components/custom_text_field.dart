@@ -38,7 +38,7 @@ class CustomTextField extends StatelessWidget {
         if (showLabel) ...[
           Text(
             label,
-            style: AppStyles.subtitle,
+            style: AppStyles.subtitle.copyWith(color: const Color.fromARGB(255, 255, 255, 255)),
           ),
           const SizedBox(height: 8.0),
         ],
@@ -62,14 +62,23 @@ class CustomTextField extends StatelessWidget {
             filled: true,
             fillColor: Colors.white,
             hintText: label,
-            hintStyle: AppStyles.small,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20.0),
-              borderSide: const BorderSide(color: Colors.grey),
-            ),
+            hintStyle: AppStyles.small.copyWith(color: AppColors.grey),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20.0),
-              borderSide: const BorderSide(color: Colors.grey),
+              borderSide: BorderSide(color: AppColors.primary100, width: 1.2),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.0),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.0),
+              borderSide: BorderSide(color: Colors.red.shade400, width: 1.5),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.0),
+              borderSide: BorderSide(color: Colors.red.shade700, width: 2),
             ),
           ),
         ),
