@@ -34,123 +34,135 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                const SpaceHeight(80),
-                Image.asset('lib/core/assets/images/logo.png', width: 120),
-                const SpaceHeight(16),
-                Text(
-                  'Selamat Datang Kembali',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SpaceHeight(8),
-                Text(
-                  'Masuk untuk mulai mengelola keuangan',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white70,
-                  ),
-                ),
-                const SpaceHeight(32),
-                CustomTextField(
-                  controller: _emailController,
-                  label: 'Email',
-                  validator: 'Email wajib diisi',
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const Icon(Icons.email),
-                ),
-                const SpaceHeight(20),
-                CustomTextField(
-                  controller: _passwordController,
-                  label: 'Password',
-                  validator: 'Password wajib diisi',
-                  obscureText: !isShowPassword,
-                  prefixIcon: const Icon(Icons.lock),
-                  suffixIcon: IconButton(
-                    onPressed: () =>
-                        setState(() => isShowPassword = !isShowPassword),
-                    icon: Icon(
-                      isShowPassword ? Icons.visibility : Icons.visibility_off,
-                      color: AppColors.grey,
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          const SpaceHeight(80),
+                          Image.asset('lib/core/assets/images/logo.png', width: 120),
+                          const SpaceHeight(16),
+                          Text(
+                            'Selamat Datang Kembali',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SpaceHeight(8),
+                          Text(
+                            'Masuk untuk mulai mengelola keuangan',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: Colors.white70,
+                            ),
+                          ),
+                          const SpaceHeight(32),
+                          CustomTextField(
+                            controller: _emailController,
+                            label: 'Email',
+                            validator: 'Email wajib diisi',
+                            keyboardType: TextInputType.emailAddress,
+                            prefixIcon: const Icon(Icons.email),
+                          ),
+                          const SpaceHeight(20),
+                          CustomTextField(
+                            controller: _passwordController,
+                            label: 'Password',
+                            validator: 'Password wajib diisi',
+                            obscureText: !isShowPassword,
+                            prefixIcon: const Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              onPressed: () =>
+                                  setState(() => isShowPassword = !isShowPassword),
+                              icon: Icon(
+                                isShowPassword ? Icons.visibility : Icons.visibility_off,
+                                color: AppColors.grey,
+                              ),
+                            ),
+                          ),
+                          const SpaceHeight(32),
+                          BlocConsumer<LoginBloc, LoginState>(
+                            listener: (context, state) {
+                              if (state is LoginFailure) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(state.error)),
+                                );
+                              } else if (state is LoginSuccess) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Selamat datang, ${state.responseModel.user?.name ?? ''}',
+                                    ),
+                                  ),
+                                );
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                                );
+                              }
+                            },
+                            builder: (context, state) {
+                              return SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton(
+                                  onPressed: state is LoginLoading
+                                      ? null
+                                      : () {
+                                          if (_formKey.currentState!.validate()) {
+                                            final request = LoginRequestModel(
+                                              email: _emailController.text.trim(),
+                                              password: _passwordController.text.trim(),
+                                            );
+                                            context.read<LoginBloc>().add(
+                                                  LoginRequested(requestModel: request),
+                                                );
+                                          }
+                                        },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: AppColors.primary800,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: state is LoginLoading
+                                      ? const CircularProgressIndicator(
+                                          color: AppColors.primary,
+                                        )
+                                      : const Text(
+                                          "Masuk",
+                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SpaceHeight(20),
+                          TextButton(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                            ),
+                            child: const Text(
+                              'Belum punya akun? Daftar',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          const SpaceHeight(16), // Tambahan padding bawah
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                const SpaceHeight(32),
-                BlocConsumer<LoginBloc, LoginState>(
-                  listener: (context, state) {
-                    if (state is LoginFailure) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text(state.error)));
-                    } else if (state is LoginSuccess) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Selamat datang, ${state.responseModel.user?.name ?? ''}',
-                          ),
-                        ),
-                      );
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const HomeScreen()),
-                      );
-                    }
-                  },
-                  builder: (context, state) {
-                    return SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: state is LoginLoading
-                            ? null
-                            : () {
-                                if (_formKey.currentState!.validate()) {
-                                  final request = LoginRequestModel(
-                                    email: _emailController.text.trim(),
-                                    password: _passwordController.text.trim(),
-                                  );
-                                  context.read<LoginBloc>().add(
-                                    LoginRequested(requestModel: request),
-                                  );
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.primary800,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: state is LoginLoading
-                            ? const CircularProgressIndicator(
-                                color: AppColors.primary,
-                              )
-                            : const Text(
-                                "Masuk",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                      ),
-                    );
-                  },
-                ),
-                const SpaceHeight(20),
-                TextButton(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                  ),
-                  child: const Text(
-                    'Belum punya akun? Daftar',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
