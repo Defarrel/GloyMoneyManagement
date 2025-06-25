@@ -2,14 +2,12 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:dartz/dartz.dart';
 
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gloymoneymanagement/data/models/request/auth/login_request_model.dart';
 import 'package:gloymoneymanagement/data/models/request/auth/register_request_model.dart';
 import 'package:gloymoneymanagement/data/models/response/auth/auth_response_mode.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
 import 'package:http/http.dart' as http;
-
 
 class AuthRepository {
   final ServiceHttpClient _serviceHttpClient;
@@ -31,20 +29,24 @@ class AuthRepository {
       if (response.statusCode == 200) {
         final authResponse = AuthResponseModel.fromMap(jsonResponse);
 
-        // Simpan token & role ke secure storage
         await _secureStorage.write(
-            key: "authToken", value: authResponse.user?.token ?? '');
+          key: "authToken",
+          value: authResponse.token ?? '',
+        );
         await _secureStorage.write(
-            key: "userRole", value: authResponse.user?.role ?? '');
+          key: "userRole",
+          value: authResponse.user?.role ?? '',
+        );
 
         log("Login success: ${authResponse.user?.email}");
         return Right(authResponse);
       } else {
         final message = jsonResponse['message'] ?? "Login failed";
+        log("Login failed: $message");
         return Left(message);
       }
     } catch (e) {
-      log("Login error: $e");
+      log("Login exception: $e");
       return Left("An error occurred while logging in.");
     }
   }
@@ -75,6 +77,6 @@ class AuthRepository {
   Future<void> logout() async {
     await _secureStorage.delete(key: "authToken");
     await _secureStorage.delete(key: "userRole");
-    log("🚪 Logged out");
+    log("Logged out");
   }
 }
