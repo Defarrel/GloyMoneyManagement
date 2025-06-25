@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
+import 'package:gloymoneymanagement/presentation/transaksi/pages/riwayat_transaksi.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -59,7 +60,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-
             // Menu Navigasi
             Container(
               color: Colors.white,
@@ -67,15 +67,37 @@ class HomeScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _homeMenuItem(Icons.receipt, "Transaksi"),
-                  _homeMenuItem(Icons.bar_chart, "Portofolio"),
-                  _homeMenuItem(Icons.savings, "Menabung"),
-                  _homeMenuItem(Icons.timelapse, "Pensiun"),
+                  _homeMenuItem(Icons.receipt, "Transaksi", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const RiwayatTransaksi(),
+                      ),
+                    );
+                  }),
+                  _homeMenuItem(Icons.bar_chart, "Portofolio", () {
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (_) => const PortfolioScreen()),
+                    // );
+                  }),
+                  _homeMenuItem(Icons.savings, "Menabung", () {
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (_) => const SavingScreen()),
+                    // );
+                  }),
+                  _homeMenuItem(Icons.timelapse, "Pensiun", () {
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (_) => const PensiunScreen()),
+                    // );
+                  }),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
 
+            const SizedBox(height: 12),
             // Kartu Ringkasan Dana Pensiun
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -157,20 +179,23 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _homeMenuItem(IconData icon, String label) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
-            shape: BoxShape.circle,
+  Widget _homeMenuItem(IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: AppColors.primary),
           ),
-          child: Icon(icon, color: AppColors.primary),
-        ),
-        const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontSize: 13)),
-      ],
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(fontSize: 13)),
+        ],
+      ),
     );
   }
 }
