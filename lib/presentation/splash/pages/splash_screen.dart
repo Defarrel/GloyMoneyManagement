@@ -1,50 +1,47 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/presentation/auth/pages/login_screen.dart';
+import 'package:gloymoneymanagement/presentation/home/pages/home_screen.dart';
+import 'package:gloymoneymanagement/presentation/splash/bloc/splash_bloc.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => SplashBloc(secureStorage: const FlutterSecureStorage())..add(CheckSplashToken()),
+      child: BlocListener<SplashBloc, SplashState>(
+        listener: (context, state) {
+          if (state is SplashAuthenticated) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+            );
+          } else if (state is SplashUnauthenticated) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            );
+          }
+        },
+        child: const _SplashUI(),
+      ),
+    );
+  }
 }
 
-class _SplashScreenState extends State<SplashScreen> {
-  final secureStorage = const FlutterSecureStorage();
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAuthStatus();
-  }
-
-  Future<void> _checkAuthStatus() async {
-    await Future.delayed(const Duration(seconds: 2)); // waktu loading splash
-
-    final token = await secureStorage.read(key: "authToken");
-
-    if (token != null) {
-      // Navigator.pushReplacement(
-      //   context,
-      //   MaterialPageRoute(builder: (_) => const HomeScreen()),
-      // );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
-    }
-  }
+class _SplashUI extends StatelessWidget {
+  const _SplashUI();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+    return const Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
-        child: Image.asset(
-          'lib/core/assets/images/logo.png', 
+        child: Image(
+          image: AssetImage('lib/core/assets/images/logo_polos.png'),
           width: 150,
         ),
       ),
