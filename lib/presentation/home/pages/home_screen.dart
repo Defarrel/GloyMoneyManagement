@@ -137,7 +137,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       minimumSize: const Size.fromHeight(40),
                     ),
-                    child: const Text("Top Up"),
+                    child: const Text("Top Up", style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),

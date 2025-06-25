@@ -5,6 +5,7 @@ import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/core/components/spaces.dart';
 import 'package:gloymoneymanagement/data/models/request/auth/login_request_model.dart';
 import 'package:gloymoneymanagement/presentation/auth/bloc/login/login_bloc.dart';
+import 'package:gloymoneymanagement/presentation/home/pages/home_root.dart';
 import 'package:gloymoneymanagement/presentation/home/pages/home_screen.dart';
 import 'package:gloymoneymanagement/presentation/auth/pages/register_screen.dart';
 
@@ -103,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 );
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                                  MaterialPageRoute(builder: (_) => const HomeRoot()),
                                 );
                               }
                             },

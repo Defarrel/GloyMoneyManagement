@@ -121,6 +121,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         name: nameController.text.trim(),
                                         email: emailController.text.trim(),
                                         password: passwordController.text.trim(),
+                                        role: "user",
                                       );
                                       context.read<RegisterBloc>().add(
                                             RegisterRequested(requestModel: request),
