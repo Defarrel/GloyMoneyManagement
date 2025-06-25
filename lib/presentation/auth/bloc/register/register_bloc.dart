@@ -1,13 +1,21 @@
-import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gloymoneymanagement/data/repository/auth_repository.dart';
+import 'package:gloymoneymanagement/presentation/auth/bloc/register/register_event.dart';
+import 'package:gloymoneymanagement/presentation/auth/bloc/register/register_state.dart';
 
-part 'register_event.dart';
-part 'register_state.dart';
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
-  RegisterBloc() : super(RegisterInitial()) {
-    on<RegisterEvent>((event, emit) {
-      // TODO: implement event handler
+  final AuthRepository authRepository;
+
+  RegisterBloc({required this.authRepository}) : super(RegisterInitial()) {
+    on<RegisterRequested>((event, emit) async {
+      emit(RegisterLoading());
+
+      final result = await authRepository.register(event.requestModel);
+      result.fold(
+        (error) => emit(RegisterFailure(error)),
+        (_) => emit(RegisterSuccess()),
+      );
     });
   }
 }
