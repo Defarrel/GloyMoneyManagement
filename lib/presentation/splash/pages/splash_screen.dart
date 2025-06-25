@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gloymoneymanagement/presentation/auth/pages/login_screen.dart';
+import 'package:gloymoneymanagement/presentation/home/pages/home_root.dart';
 import 'package:gloymoneymanagement/presentation/home/pages/home_screen.dart';
 import 'package:gloymoneymanagement/presentation/splash/bloc/splash_bloc.dart';
 
@@ -17,7 +18,7 @@ class SplashScreen extends StatelessWidget {
           if (state is SplashAuthenticated) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const HomeScreen()),
+              MaterialPageRoute(builder: (_) => const HomeRoot()),
             );
           } else if (state is SplashUnauthenticated) {
             Navigator.pushReplacement(
