@@ -100,6 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     content: Text(
                                       'Selamat datang, ${state.responseModel.user?.name ?? ''}',
                                     ),
+                                    backgroundColor: AppColors.primary,
                                   ),
                                 );
                                 Navigator.pushReplacement(

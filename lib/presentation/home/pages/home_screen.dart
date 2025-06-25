@@ -13,10 +13,7 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Image.asset(
-          'lib/core/assets/images/logo_polos.png',
-          height: 30,
-        ),
+        title: Image.asset('lib/core/assets/images/logo_polos.png', height: 30),
         centerTitle: false,
       ),
       body: SingleChildScrollView(
@@ -29,8 +26,10 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Nilai Portofolio",
-                      style: TextStyle(color: Colors.black54)),
+                  const Text(
+                    "Saldo Anda",
+                    style: TextStyle(color: Colors.black54),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     "Rp 5.300.000",
@@ -68,6 +67,7 @@ class HomeScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
+                  _homeMenuItem(Icons.receipt, "Transaksi"),
                   _homeMenuItem(Icons.bar_chart, "Portofolio"),
                   _homeMenuItem(Icons.savings, "Menabung"),
                   _homeMenuItem(Icons.timelapse, "Pensiun"),
@@ -102,12 +102,15 @@ class HomeScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Total Investasi",
-                                style: TextStyle(fontSize: 12)),
+                            Text(
+                              "Total Investasi",
+                              style: TextStyle(fontSize: 12),
+                            ),
                             SizedBox(height: 4),
-                            Text("Rp 3.000.000",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold)),
+                            Text(
+                              "Rp 3.000.000",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                       ),
@@ -117,11 +120,13 @@ class HomeScreen extends StatelessWidget {
                           children: [
                             Text("Keuntungan", style: TextStyle(fontSize: 12)),
                             SizedBox(height: 4),
-                            Text("Rp 540.000",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green,
-                                )),
+                            Text(
+                              "Rp 540.000",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -137,7 +142,10 @@ class HomeScreen extends StatelessWidget {
                       ),
                       minimumSize: const Size.fromHeight(40),
                     ),
-                    child: const Text("Top Up", style: TextStyle(color: Colors.white)),
+                    child: const Text(
+                      "Top Up",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ],
               ),
