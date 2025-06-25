@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class ServiceHttpClient {
-  final String baseUrl = 'http://10.0.2.2:8000/api/';
+  final String baseUrl = 'http://10.0.2.2:5000/api/';
   final secureStorage = FlutterSecureStorage();
 
   // POST tanpa token
@@ -27,7 +27,9 @@ class ServiceHttpClient {
 
   // POST dengan token
   Future<http.Response> postWithToken(
-      String endPoint, Map<String, dynamic> body) async {
+    String endPoint,
+    Map<String, dynamic> body,
+  ) async {
     final token = await secureStorage.read(key: "authToken");
     final url = Uri.parse("$baseUrl$endPoint");
 
