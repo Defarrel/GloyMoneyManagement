@@ -5,10 +5,15 @@ import 'package:gloymoneymanagement/presentation/auth/bloc/login/login_bloc.dart
 import 'package:gloymoneymanagement/presentation/auth/bloc/register/register_bloc.dart';
 import 'package:gloymoneymanagement/presentation/splash/pages/splash_screen.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() {
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null); 
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

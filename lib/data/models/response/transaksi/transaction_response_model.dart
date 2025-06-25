@@ -21,28 +21,31 @@ class TransactionResponseModel {
     required this.date,
   });
 
+  factory TransactionResponseModel.fromJson(String str) =>
+      TransactionResponseModel.fromMap(json.decode(str));
+
   factory TransactionResponseModel.fromMap(Map<String, dynamic> json) =>
       TransactionResponseModel(
         id: json['id'],
         userId: json['user_id'],
         type: json['type'],
         category: json['category'],
-        amount: (json['amount'] as num).toDouble(),
+        amount: double.tryParse(json['amount'].toString()) ?? 0.0,
         description: json['description'],
         location: json['location'],
         date: DateTime.parse(json['date']),
       );
 
   Map<String, dynamic> toMap() => {
-        "id": id,
-        "user_id": userId,
-        "type": type,
-        "category": category,
-        "amount": amount,
-        "description": description,
-        "location": location,
-        "date": date.toIso8601String(),
-      };
+    "id": id,
+    "user_id": userId,
+    "type": type,
+    "category": category,
+    "amount": amount,
+    "description": description,
+    "location": location,
+    "date": date.toIso8601String(),
+  };
 
   static List<TransactionResponseModel> fromJsonList(String str) {
     final data = json.decode(str);
