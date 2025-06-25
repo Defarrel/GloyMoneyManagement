@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:gloymoneymanagement/core/constants/colors.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gloymoneymanagement/core/components/custom_text_field.dart';
+import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/core/components/spaces.dart';
 import 'package:gloymoneymanagement/data/models/request/auth/login_request_model.dart';
-import 'package:gloymoneymanagement/data/repository/auth_repository.dart';
-import 'package:gloymoneymanagement/presentation/auth/pages/register_screen.dart';
+import 'package:gloymoneymanagement/presentation/auth/bloc/login/login_bloc.dart';
 import 'package:gloymoneymanagement/presentation/home/pages/home.dart';
-import 'package:gloymoneymanagement/services/service_http_client.dart';
+import 'package:gloymoneymanagement/presentation/auth/pages/register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,77 +16,32 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final AuthRepository authRepository = AuthRepository(ServiceHttpClient());
-
-  bool isLoading = false;
   bool isShowPassword = false;
-  String? errorMessage;
-
-  void handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      isLoading = true;
-      errorMessage = null;
-    });
-
-    final request = LoginRequestModel(
-      email: emailController.text.trim(),
-      password: passwordController.text.trim(),
-    );
-
-    final result = await authRepository.login(request);
-
-    result.fold(
-      (error) {
-        setState(() {
-          errorMessage = error;
-          isLoading = false;
-        });
-      },
-      (response) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Scaffold(
       body: Container(
-        width: double.infinity,
-        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
+            colors: [Color(0xFF0E4316), Color(0xFF07AB7F)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color.fromARGB(255, 16, 71, 24), 
-              Color.fromARGB(255, 8, 210, 156), 
-            ],
           ),
         ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
+        padding: const EdgeInsets.all(24),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
             child: Column(
               children: [
                 const SpaceHeight(80),
-                Image.asset(
-                  'lib/core/assets/images/logo.png',
-                  width: 120,
-                  height: 120,
-                ),
-                const SpaceHeight(10),
+                Image.asset('lib/core/assets/images/logo.png', width: 120),
+                const SpaceHeight(16),
                 Text(
                   'Selamat Datang Kembali',
                   style: theme.textTheme.headlineSmall?.copyWith(
@@ -94,20 +49,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SpaceHeight(8),
                 Text(
-                  'Ayok Mulai Menabung!',
-                  style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                  'Masuk untuk mulai mengelola keuangan',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.white70,
+                  ),
                 ),
                 const SpaceHeight(32),
-                if (errorMessage != null)
-                  Text(
-                    errorMessage!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                const SpaceHeight(12),
                 CustomTextField(
-                  controller: emailController,
+                  controller: _emailController,
                   label: 'Email',
                   validator: 'Email wajib diisi',
                   keyboardType: TextInputType.emailAddress,
@@ -115,17 +66,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SpaceHeight(20),
                 CustomTextField(
-                  controller: passwordController,
+                  controller: _passwordController,
                   label: 'Password',
                   validator: 'Password wajib diisi',
                   obscureText: !isShowPassword,
                   prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        isShowPassword = !isShowPassword;
-                      });
-                    },
+                    onPressed: () =>
+                        setState(() => isShowPassword = !isShowPassword),
                     icon: Icon(
                       isShowPassword ? Icons.visibility : Icons.visibility_off,
                       color: AppColors.grey,
@@ -133,33 +81,71 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SpaceHeight(32),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: isLoading ? null : handleLogin,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppColors.primary800,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                BlocConsumer<LoginBloc, LoginState>(
+                  listener: (context, state) {
+                    if (state is LoginFailure) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(state.error)));
+                    } else if (state is LoginSuccess) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Selamat datang, ${state.responseModel.user?.name ?? ''}',
+                          ),
+                        ),
+                      );
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const HomeScreen()),
+                      );
+                    }
+                  },
+                  builder: (context, state) {
+                    return SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: state is LoginLoading
+                            ? null
+                            : () {
+                                if (_formKey.currentState!.validate()) {
+                                  final request = LoginRequestModel(
+                                    email: _emailController.text.trim(),
+                                    password: _passwordController.text.trim(),
+                                  );
+                                  context.read<LoginBloc>().add(
+                                    LoginRequested(requestModel: request),
+                                  );
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.primary800,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: state is LoginLoading
+                            ? const CircularProgressIndicator(
+                                color: AppColors.primary,
+                              )
+                            : const Text(
+                                "Masuk",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
                       ),
-                    ),
-                    child: isLoading
-                        ? const CircularProgressIndicator(color: AppColors.primary)
-                        : const Text("Masuk", style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
+                    );
+                  },
                 ),
                 const SpaceHeight(20),
                 TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                    );
-                  },
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                  ),
                   child: const Text(
-                    "Belum punya akun? Daftar",
+                    'Belum punya akun? Daftar',
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
