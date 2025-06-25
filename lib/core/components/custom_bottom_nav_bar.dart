@@ -1,0 +1,31 @@
+import 'package:flutter/material.dart';
+import 'package:gloymoneymanagement/core/constants/colors.dart';
+
+class CustomBottomNavBar extends StatelessWidget {
+  final int currentIndex;
+  final Function(int) onTap;
+
+  const CustomBottomNavBar({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: Colors.white,
+      currentIndex: currentIndex,
+      onTap: onTap,
+      selectedItemColor: AppColors.primary800,
+      unselectedItemColor: Colors.grey,
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
+        BottomNavigationBarItem(icon: Icon(Icons.savings), label: 'Menabung'),
+        BottomNavigationBarItem(icon: Icon(Icons.timeline), label: 'Pensiun'),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Akun'),
+      ],
+    );
+  }
+}
