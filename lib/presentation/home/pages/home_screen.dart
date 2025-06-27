@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/presentation/transaksi/pages/riwayat_transaksi.dart';
+import 'package:gloymoneymanagement/presentation/transaksi/pages/tambah_transaksi.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -94,6 +95,31 @@ class HomeScreen extends StatelessWidget {
                     // );
                   }),
                 ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+            // Tombol Transaksi
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const TambahTransaksi()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary800,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  minimumSize: const Size.fromHeight(40),
+                ),
+                child: const Text(
+                  "Transaksi Baru",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
 
