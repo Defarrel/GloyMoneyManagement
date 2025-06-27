@@ -4,16 +4,15 @@ import 'package:gloymoneymanagement/data/repository/auth_repository.dart';
 import 'package:gloymoneymanagement/presentation/auth/bloc/login/login_bloc.dart';
 import 'package:gloymoneymanagement/presentation/auth/bloc/register/register_bloc.dart';
 import 'package:gloymoneymanagement/presentation/splash/pages/splash_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('id_ID', null); 
+  await initializeDateFormatting('id_ID', null);
   runApp(const MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -34,8 +33,22 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'GMM App',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(primarySwatch: Colors.green),
+        theme: ThemeData(
+          primarySwatch: Colors.green,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.green,
+            primary: Colors.green,
+            secondary: Colors.greenAccent,
+          ),
+        ),
         home: const SplashScreen(),
+
+        supportedLocales: const [Locale('id', 'ID'), Locale('en', 'US')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
       ),
     );
   }

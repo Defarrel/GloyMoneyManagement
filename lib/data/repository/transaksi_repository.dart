@@ -17,7 +17,7 @@ class TransactionRepository {
   Future<Either<String, bool>> addTransaction(TransactionRequestModel model) async {
     try {
       log("Sending add transaction request: ${model.toMap()}");
-      final http.Response response = await _httpClient.post("transactions", model.toMap());
+      final http.Response response = await _httpClient.postWithToken("transactions", model.toMap());
 
       if (response.statusCode == 201) {
         log("Transaction added successfully.");
