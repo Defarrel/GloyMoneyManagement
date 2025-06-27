@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/components/custom_text_field_2.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
+import 'package:gloymoneymanagement/presentation/transaksi/pages/map_page.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:gloymoneymanagement/data/models/request/transaksi/transaction_request_model.dart';
@@ -26,8 +27,20 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
   final _dateController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
 
-  final List<String> pemasukanCategories = ['Gaji', 'Bonus', 'Penjualan', 'Investasi', "Lainnya"];
-  final List<String> pengeluaranCategories = ['Makanan', 'Transportasi', 'Hiburan', 'Tagihan', "lainnya"];
+  final List<String> pemasukanCategories = [
+    'Gaji',
+    'Bonus',
+    'Penjualan',
+    'Investasi',
+    'Lainnya',
+  ];
+  final List<String> pengeluaranCategories = [
+    'Makanan',
+    'Transportasi',
+    'Hiburan',
+    'Tagihan',
+    'Lainnya',
+  ];
 
   List<String> get currentCategories {
     return _type == 'pemasukan' ? pemasukanCategories : pengeluaranCategories;
@@ -37,7 +50,10 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
   void initState() {
     super.initState();
     initializeDateFormatting('id_ID', null);
-    _dateController.text = DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(_selectedDate);
+    _dateController.text = DateFormat(
+      'EEEE, dd MMMM yyyy',
+      'id_ID',
+    ).format(_selectedDate);
   }
 
   Future<void> _selectDate() async {
@@ -51,14 +67,19 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
-        _dateController.text = DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(picked);
+        _dateController.text = DateFormat(
+          'EEEE, dd MMMM yyyy',
+          'id_ID',
+        ).format(picked);
       });
     }
   }
 
   Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
-      final amount = double.tryParse(_amountController.text.replaceAll(',', ''));
+      final amount = double.tryParse(
+        _amountController.text.replaceAll(',', ''),
+      );
       if (amount == null) return;
 
       final model = TransactionRequestModel(
@@ -72,7 +93,9 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
 
       final result = await _repository.addTransaction(model);
       result.fold(
-        (error) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error))),
+        (error) => ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error))),
         (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Transaksi berhasil ditambahkan")),
@@ -98,15 +121,23 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
                 onPressed: (index) {
                   setState(() {
                     _type = index == 0 ? 'pemasukan' : 'pengeluaran';
-                    _category = null; 
+                    _category = null;
                   });
                 },
                 borderRadius: BorderRadius.circular(10),
                 selectedColor: Colors.white,
-                fillColor: _type == 'pemasukan' ? AppColors.primary : Colors.red,
+                fillColor: _type == 'pemasukan'
+                    ? AppColors.primary
+                    : Colors.red,
                 children: const [
-                  Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('Pemasukan')),
-                  Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('Pengeluaran')),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Pemasukan'),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Pengeluaran'),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -123,29 +154,42 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
                 value: _category,
                 decoration: InputDecoration(
                   labelText: 'Kategori',
-                  labelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                  labelStyle: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  ),
                   filled: true,
                   fillColor: Colors.grey.shade100,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 18,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: Colors.grey),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: Colors.green, width: 1.5),
+                    borderSide: const BorderSide(
+                      color: Colors.green,
+                      width: 1.5,
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide(color: Colors.grey.shade300),
                   ),
                 ),
-                hint: const Text('Pilih Kategori', style: TextStyle(fontSize: 14)),
+                hint: const Text(
+                  'Pilih Kategori',
+                  style: TextStyle(fontSize: 14),
+                ),
                 items: currentCategories
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
                 onChanged: (value) => setState(() => _category = value),
-                validator: (value) => value == null ? 'Kategori wajib dipilih' : null,
+                validator: (value) =>
+                    value == null ? 'Kategori wajib dipilih' : null,
               ),
               const SizedBox(height: 16),
 
@@ -155,9 +199,26 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
               ),
               const SizedBox(height: 16),
 
-              CustomTextField2(
-                controller: _locationController,
-                label: 'Lokasi (opsional)',
+              GestureDetector(
+                onTap: () async {
+                  final selectedAddress = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MapPage()),
+                  );
+                  if (selectedAddress != null && selectedAddress is String) {
+                    setState(() {
+                      _locationController.text = selectedAddress;
+                    });
+                  }
+                },
+                child: AbsorbPointer(
+                  child: CustomTextField2(
+                    controller: _locationController,
+                    label: 'Lokasi (opsional)',
+                    suffixIcon: const Icon(Icons.map),
+                    readOnly: true,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -179,11 +240,16 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
                 onPressed: _submit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary800,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Simpan', style: TextStyle(fontSize: 16, color: Colors.white)),
-              )
+                child: const Text(
+                  'Simpan',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
             ],
           ),
         ),
