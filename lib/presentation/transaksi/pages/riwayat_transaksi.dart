@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/data/models/response/transaksi/transaction_response_model.dart';
 import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
+import 'package:gloymoneymanagement/presentation/transaksi/pages/tambah_transaksi.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
 import 'package:intl/intl.dart';
 
@@ -13,7 +14,9 @@ class RiwayatTransaksi extends StatefulWidget {
 
 class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
   late Future<List<TransactionResponseModel>> _futureTransactions;
-  final TransactionRepository _repository = TransactionRepository(ServiceHttpClient());
+  final TransactionRepository _repository = TransactionRepository(
+    ServiceHttpClient(),
+  );
 
   @override
   void initState() {
@@ -23,10 +26,7 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
 
   Future<List<TransactionResponseModel>> _loadTransactions() async {
     final result = await _repository.getTransactions();
-    return result.fold(
-      (error) => throw Exception(error),
-      (data) => data,
-    );
+    return result.fold((error) => throw Exception(error), (data) => data);
   }
 
   @override
@@ -38,7 +38,10 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              // Navigasi ke halaman tambah transaksi
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const TambahTransaksi()),
+              );
             },
           ),
         ],
@@ -75,11 +78,16 @@ class _TransactionCard extends StatelessWidget {
   const _TransactionCard({required this.item});
 
   @override
-
   Widget build(BuildContext context) {
     final formattedDate = DateFormat('dd MMMM yyyy', 'id_ID').format(item.date);
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp', decimalDigits: 0);
-    final amountText = (item.type == 'pemasukan' ? '+ ' : '- ') + currencyFormat.format(item.amount);
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp',
+      decimalDigits: 0,
+    );
+    final amountText =
+        (item.type == 'pemasukan' ? '+ ' : '- ') +
+        currencyFormat.format(item.amount);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -103,12 +111,21 @@ class _TransactionCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.category ?? '-', style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  item.category ?? '-',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 4),
                 if (item.location != null && item.location!.isNotEmpty)
-                  Text(item.location!, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                  Text(
+                    item.location!,
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
                 const SizedBox(height: 4),
-                Text(formattedDate, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(
+                  formattedDate,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ],
             ),
           ),
