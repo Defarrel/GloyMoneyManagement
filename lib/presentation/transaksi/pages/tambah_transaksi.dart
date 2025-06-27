@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/components/custom_text_field_2.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
+import 'package:gloymoneymanagement/presentation/transaksi/pages/done_page.dart';
 import 'package:gloymoneymanagement/presentation/transaksi/pages/map_page.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -97,10 +98,10 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
           context,
         ).showSnackBar(SnackBar(content: Text(error))),
         (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Transaksi berhasil ditambahkan")),
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const DonePage()),
           );
-          Navigator.pop(context);
         },
       );
     }
