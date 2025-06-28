@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/data/models/response/transaksi/transaction_response_model.dart';
 import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
+import 'package:gloymoneymanagement/presentation/transaksi/pages/detail_transaksi.dart';
 import 'package:gloymoneymanagement/presentation/transaksi/pages/tambah_transaksi.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
 import 'package:intl/intl.dart';
@@ -89,58 +90,76 @@ class _TransactionCard extends StatelessWidget {
         (item.type == 'pemasukan' ? '+ ' : '- ') +
         currencyFormat.format(item.amount);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.15),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.category ?? '-',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                if (item.location != null && item.location!.isNotEmpty)
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => DetailTransaksi(transaksi: item)),
+        ).then((refresh) {
+          if (refresh == true) {
+            final state = context
+                .findAncestorStateOfType<_RiwayatTransaksiState>();
+            state?._futureTransactions = state._loadTransactions();
+            state?.setState(() {});
+          }
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.15),
+              blurRadius: 10,
+              offset: const Offset(0, 9),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    item.location!,
-                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                    item.category ?? '-',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                const SizedBox(height: 4),
-                Text(
-                  formattedDate,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-          Flexible(
-            flex: 1,
-            child: Text(
-              amountText,
-              style: TextStyle(
-                color: item.type == 'pemasukan' ? Colors.green : Colors.red,
-                fontWeight: FontWeight.bold,
+                  const SizedBox(height: 4),
+                  if (item.location != null && item.location!.isNotEmpty)
+                    Text(
+                      item.location!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  const SizedBox(height: 4),
+                  Text(
+                    formattedDate,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
               ),
-              textAlign: TextAlign.end,
             ),
-          ),
-        ],
+            Flexible(
+              flex: 1,
+              child: Text(
+                amountText,
+                style: TextStyle(
+                  color: item.type == 'pemasukan' ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.end,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
