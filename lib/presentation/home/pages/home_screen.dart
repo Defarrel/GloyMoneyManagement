@@ -1,10 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
+import 'package:gloymoneymanagement/data/models/response/transaksi/transaction_response_model.dart';
+import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
 import 'package:gloymoneymanagement/presentation/transaksi/pages/riwayat_transaksi.dart';
 import 'package:gloymoneymanagement/presentation/transaksi/pages/tambah_transaksi.dart';
+import 'package:gloymoneymanagement/services/service_http_client.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final _repo = TransactionRepository(ServiceHttpClient());
+  List<TransactionResponseModel> _transactions = [];
+  int _saldo = 0;
+  int _pemasukan = 0;
+  int _pengeluaran = 0;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTransactions();
+  }
+
+  Future<void> _loadTransactions() async {
+    setState(() => _isLoading = true);
+    final result = await _repo.getTransactions();
+    result.fold(
+      (error) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+        setState(() => _isLoading = false);
+      },
+      (data) {
+        final pemasukan = data
+            .where((t) => t.type.toLowerCase() == 'pemasukan')
+            .fold<int>(0, (sum, t) => sum + t.amount.toInt());
+        final pengeluaran = data
+            .where((t) => t.type.toLowerCase() == 'pengeluaran')
+            .fold<int>(0, (sum, t) => sum + t.amount.toInt());
+        setState(() {
+          _transactions = data;
+          _pemasukan = pemasukan;
+          _pengeluaran = pengeluaran;
+          _saldo = pemasukan - pengeluaran;
+          _isLoading = false;
+        });
+      },
+    );
+  }
+
+  String _formatRupiah(int value) {
+    final s = value.toString();
+    final reg = RegExp(r'\B(?=(\d{3})+(?!\d))');
+    return s.replaceAllMapped(reg, (m) => '.');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +74,7 @@ class HomeScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Portfolio Header
+            // Saldo Header
             Container(
               color: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -34,24 +87,24 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "Rp 5.300.000",
+                    _isLoading ? "Memuat..." : "Rp ${_formatRupiah(_saldo)}",
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 12),
                   Row(
-                    children: const [
+                    children: [
                       Expanded(
                         child: Text(
-                          "Keuntungan\nRp 724.000",
-                          style: TextStyle(color: Colors.green),
+                          "Pengeluaran\nRp ${_formatRupiah(_pengeluaran)}",
+                          style: const TextStyle(color: Colors.red),
                         ),
                       ),
                       Expanded(
                         child: Text(
-                          "Imbal Hasil\n▲ +4.8%",
-                          style: TextStyle(color: Colors.green),
+                          "Pemasukan\nRp ${_formatRupiah(_pemasukan)}",
+                          style: const TextStyle(color: Colors.green),
                           textAlign: TextAlign.right,
                         ),
                       ),
@@ -61,6 +114,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
+
             // Menu Navigasi
             Container(
               color: Colors.white,
@@ -74,32 +128,17 @@ class HomeScreen extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (_) => const RiwayatTransaksi(),
                       ),
-                    );
+                    ).then((_) => _loadTransactions());
                   }),
-                  _homeMenuItem(Icons.bar_chart, "Portofolio", () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(builder: (_) => const PortfolioScreen()),
-                    // );
-                  }),
-                  _homeMenuItem(Icons.savings, "Menabung", () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(builder: (_) => const SavingScreen()),
-                    // );
-                  }),
-                  _homeMenuItem(Icons.timelapse, "Pensiun", () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(builder: (_) => const PensiunScreen()),
-                    // );
-                  }),
+                  _homeMenuItem(Icons.bar_chart, "Portofolio", () {}),
+                  _homeMenuItem(Icons.savings, "Menabung", () {}),
+                  _homeMenuItem(Icons.timelapse, "Pensiun", () {}),
                 ],
               ),
             ),
-
             const SizedBox(height: 12),
-            // Tombol Transaksi
+
+            // Tombol Transaksi Baru
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: ElevatedButton(
@@ -107,7 +146,7 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const TambahTransaksi()),
-                  );
+                  ).then((_) => _loadTransactions());
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary800,
@@ -122,9 +161,9 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 12),
-            // Kartu Ringkasan Dana Pensiun
+
+            // Kartu Rencana Pensiun
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(16),
@@ -150,15 +189,9 @@ class HomeScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "Total Investasi",
-                              style: TextStyle(fontSize: 12),
-                            ),
+                            Text("Total Investasi", style: TextStyle(fontSize: 12)),
                             SizedBox(height: 4),
-                            Text(
-                              "Rp 3.000.000",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
+                            Text("Rp 3.000.000", style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),
