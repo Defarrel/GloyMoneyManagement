@@ -37,6 +37,14 @@ class AuthRepository {
           key: "userRole",
           value: authResponse.user?.role ?? '',
         );
+        await _secureStorage.write(
+          key: "userName",
+          value: authResponse.user?.name ?? '',
+        );
+        await _secureStorage.write(
+          key: "userEmail",
+          value: authResponse.user?.email ?? '',
+        );
 
         log("Login success: ${authResponse.user?.email}");
         return Right(authResponse);
@@ -77,6 +85,8 @@ class AuthRepository {
   Future<void> logout() async {
     await _secureStorage.delete(key: "authToken");
     await _secureStorage.delete(key: "userRole");
+    await _secureStorage.delete(key: "userName");
+    await _secureStorage.delete(key: "userEmail");
     log("Logged out");
   }
 }

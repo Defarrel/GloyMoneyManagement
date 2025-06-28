@@ -2,13 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gloymoneymanagement/presentation/auth/pages/login_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
-  void _logout(BuildContext context) async {
-    const storage = FlutterSecureStorage();
-    await storage.deleteAll();
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
 
+class _ProfileScreenState extends State<ProfileScreen> {
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  String _name = 'Memuat...';
+  String _email = 'Memuat...';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final name = await _storage.read(key: 'userName') ?? 'Tidak diketahui';
+    final email = await _storage.read(key: 'userEmail') ?? '-';
+    setState(() {
+      _name = name;
+      _email = email;
+    });
+  }
+
+  void _logout() async {
+    await _storage.deleteAll();
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -39,9 +61,9 @@ class ProfileScreen extends StatelessWidget {
                   backgroundImage: AssetImage('lib/core/assets/images/profile_placeholder.png'),
                 ),
                 const SizedBox(height: 12),
-                Text("Nama Pengguna", style: theme.textTheme.titleMedium),
+                Text(_name, style: theme.textTheme.titleMedium),
                 const SizedBox(height: 4),
-                Text("email@example.com", style: theme.textTheme.bodySmall),
+                Text(_email, style: theme.textTheme.bodySmall),
               ],
             ),
           ),
@@ -71,7 +93,7 @@ class ProfileScreen extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.logout, color: Colors.red),
                   title: const Text('Logout', style: TextStyle(color: Colors.red)),
-                  onTap: () => _logout(context),
+                  onTap: _logout,
                 ),
               ],
             ),
@@ -81,3 +103,4 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
+
