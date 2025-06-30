@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:dartz/dartz.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gloymoneymanagement/data/models/request/pensiun/pensiun_request_model.dart';
 import 'package:gloymoneymanagement/data/models/request/pensiun/withdraw_pensiun_request_model.dart';
 import 'package:gloymoneymanagement/data/models/response/pensiun/pensiun_response_model.dart';
@@ -8,14 +9,14 @@ import 'package:gloymoneymanagement/services/service_http_client.dart';
 import 'package:http/http.dart' as http;
 
 class PensionRepository {
-  final ServiceHttpClient _client;
+  final ServiceHttpClient _serviceHttpClient;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
-  PensionRepository(this._client);
-
+  PensionRepository(this._serviceHttpClient);
 
   Future<Either<String, PensionResponseModel>> getPension() async {
     try {
-      final http.Response response = await _client.get('pensiun');
+      final http.Response response = await _serviceHttpClient.get('pensiun');
       final jsonRes = json.decode(response.body);
 
       if (response.statusCode == 200) {
@@ -29,9 +30,14 @@ class PensionRepository {
     }
   }
 
-  Future<Either<String, String>> addPension(AddPensionRequestModel model) async {
+  Future<Either<String, String>> addPension(
+    AddPensionRequestModel model,
+  ) async {
     try {
-      final http.Response response = await _client.post('pensiun/add', model.toMap());
+      final http.Response response = await _serviceHttpClient.post(
+        'pensiun/add',
+        model.toMap(),
+      );
       final jsonRes = json.decode(response.body);
 
       if (response.statusCode == 201) {
@@ -45,9 +51,14 @@ class PensionRepository {
     }
   }
 
-  Future<Either<String, String>> withdrawPension(WithdrawPensionRequestModel model) async {
+  Future<Either<String, String>> withdrawPension(
+    WithdrawPensionRequestModel model,
+  ) async {
     try {
-      final http.Response response = await _client.post('pensiun/withdraw', model.toMap());
+      final http.Response response = await _serviceHttpClient.post(
+        'pensiun/withdraw',
+        model.toMap(),
+      );
       final jsonRes = json.decode(response.body);
 
       if (response.statusCode == 200) {

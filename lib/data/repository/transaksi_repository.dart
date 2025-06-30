@@ -8,16 +8,21 @@ import 'package:gloymoneymanagement/services/service_http_client.dart';
 import 'package:http/http.dart' as http;
 
 class TransactionRepository {
-  final ServiceHttpClient _httpClient;
+  final ServiceHttpClient _serviceHttpClient;
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
-  TransactionRepository(this._httpClient);
+  TransactionRepository(this._serviceHttpClient);
 
   /// Tambah transaksi baru
-  Future<Either<String, bool>> addTransaction(TransactionRequestModel model) async {
+  Future<Either<String, bool>> addTransaction(
+    TransactionRequestModel model,
+  ) async {
     try {
       log("Sending add transaction request: ${model.toMap()}");
-      final http.Response response = await _httpClient.postWithToken("transactions", model.toMap());
+      final http.Response response = await _serviceHttpClient.postWithToken(
+        "transactions",
+        model.toMap(),
+      );
 
       if (response.statusCode == 201) {
         log("Transaction added successfully.");
@@ -34,13 +39,16 @@ class TransactionRepository {
   }
 
   /// Ambil semua transaksi untuk user
-  Future<Either<String, List<TransactionResponseModel>>> getTransactions() async {
+  Future<Either<String, List<TransactionResponseModel>>>
+  getTransactions() async {
     try {
       log("Fetching transactions...");
-      final response = await _httpClient.get("transactions");
+      final response = await _serviceHttpClient.get("transactions");
 
       if (response.statusCode == 200) {
-        final transactions = TransactionResponseModel.fromJsonList(response.body);
+        final transactions = TransactionResponseModel.fromJsonList(
+          response.body,
+        );
         log("Fetched ${transactions.length} transactions.");
         return Right(transactions);
       } else {
@@ -58,7 +66,7 @@ class TransactionRepository {
   Future<Either<String, bool>> deleteTransaction(int id) async {
     try {
       log("Deleting transaction with ID: $id");
-      final response = await _httpClient.delete("transactions/$id");
+      final response = await _serviceHttpClient.delete("transactions/$id");
 
       if (response.statusCode == 200) {
         log("Transaction deleted successfully.");
