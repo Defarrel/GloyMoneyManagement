@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/data/models/response/transaksi/transaction_response_model.dart';
 import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
 import 'package:gloymoneymanagement/presentation/transaksi/pages/detail_transaksi.dart';
@@ -33,8 +34,9 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Riwayat Transaksi"),
+      appBar: CustomAppBar(
+        title: "Riwayat Transaksi",
+        showLogo: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),

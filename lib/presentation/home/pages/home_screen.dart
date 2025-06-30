@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/response/transaksi/transaction_response_model.dart';
 import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
@@ -65,11 +66,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Image.asset('lib/core/assets/images/logo_polos.png', height: 30),
-        centerTitle: false,
+      appBar: CustomAppBar(
+        title: "Gloy Money Management",
+        showLogo: true,
       ),
       body: SingleChildScrollView(
         child: Column(

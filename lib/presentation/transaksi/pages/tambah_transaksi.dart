@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/core/components/custom_text_field_2.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/presentation/transaksi/pages/done_page.dart';
@@ -110,7 +111,7 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tambah Transaksi')),
+      appBar: CustomAppBar(title: "Tambah Transaksi", showLogo: false),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(

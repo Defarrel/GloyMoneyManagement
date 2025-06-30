@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/presentation/auth/pages/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -43,11 +44,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
-      appBar: AppBar(
-        title: const Text('Akun'),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 1,
+      appBar: CustomAppBar(
+        title: "Profil Saya",
+        showLogo: true,
       ),
       body: ListView(
         children: [
