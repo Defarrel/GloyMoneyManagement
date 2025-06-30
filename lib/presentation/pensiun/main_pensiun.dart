@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/response/pensiun/pensiun_response_model.dart';
+import 'package:gloymoneymanagement/data/repository/pensiun_repository.dart';
+import 'package:gloymoneymanagement/presentation/pensiun/bloc/main_pensiun/mainpensiun_bloc.dart';
 import 'package:gloymoneymanagement/presentation/pensiun/topup_pensiun.dart';
 import 'package:gloymoneymanagement/presentation/pensiun/withdraw_pensiun.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
-class MainPensiun extends StatelessWidget {
-  final PensionResponseModel pension;
-  final VoidCallback onRefresh;
+class MainPensiun extends StatefulWidget {
+  const MainPensiun({super.key});
 
-  const MainPensiun({
-    super.key,
-    required this.pension,
-    required this.onRefresh,
-  });
+  @override
+  State<MainPensiun> createState() => _MainPensiunState();
+}
+
+class _MainPensiunState extends State<MainPensiun> {
+  @override
+  void initState() {
+    super.initState();
+  }
 
   String _formatRupiah(int value) {
     final s = value.toString();
@@ -23,126 +29,131 @@ class MainPensiun extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double progress = pension.currentAmount / pension.targetAmount;
-    final percentage = (progress * 100).clamp(0, 100).toInt();
+    return BlocBuilder<MainpensiunBloc, MainpensiunState>(
+      builder: (context, state) {
+        if (state is MainpensiunLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is MainpensiunError) {
+          return Center(child: Text(state.message));
+        } else if (state is MainpensiunLoaded) {
+          final pension = state.pension;
+          final double progress = pension.currentAmount / pension.targetAmount;
+          final percentage = (progress * 100).clamp(0, 100).toInt();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Section Icon + Judul
-          Row(
-            children: [
-              const CircleAvatar(
-                backgroundColor: AppColors.primary100,
-                child: Icon(Icons.shield, color: AppColors.primary800),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      "Rencana Pensiun",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const CircleAvatar(
+                      backgroundColor: AppColors.primary100,
+                      child: Icon(Icons.shield, color: AppColors.primary800),
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      "Pantau dan tingkatkan tabungan pensiun kamu",
-                      style: TextStyle(color: Colors.black54, fontSize: 13),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Rencana Pensiun",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            "Pantau dan tingkatkan tabungan pensiun kamu",
+                            style: TextStyle(color: Colors.black54, fontSize: 13),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-
-          // Circular progress
-          Center(
-            child: CircularPercentIndicator(
-              radius: 100,
-              lineWidth: 14,
-              percent: progress.clamp(0, 1),
-              circularStrokeCap: CircularStrokeCap.round,
-              backgroundColor: Colors.grey[300]!,
-              progressColor: AppColors.primary800,
-              center: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "$percentage%",
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                const SizedBox(height: 32),
+                Center(
+                  child: CircularPercentIndicator(
+                    radius: 100,
+                    lineWidth: 14,
+                    percent: progress.clamp(0, 1),
+                    circularStrokeCap: CircularStrokeCap.round,
+                    backgroundColor: Colors.grey[300]!,
+                    progressColor: AppColors.primary800,
+                    center: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "$percentage%",
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          "Tercapai",
+                          style: TextStyle(fontSize: 14, color: Colors.black54),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    "Tercapai",
-                    style: TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+                const SizedBox(height: 50),
+                const Text(
+                  "Rencana Dana Pensiun",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 12),
+                _infoRow("Target", "Rp ${_formatRupiah(pension.targetAmount)}"),
+                _infoRow("Terkumpul", "Rp ${_formatRupiah(pension.currentAmount)}"),
+                _infoRow("Deskripsi", pension.description),
+                _infoRow(
+                  "Deadline",
+                  "${pension.deadline.day}/${pension.deadline.month}/${pension.deadline.year}",
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const TopUpPensiun()),
+                    );
+                    context.read<MainpensiunBloc>().add(FetchMainPensiun());
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary800,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    minimumSize: const Size.fromHeight(40),
                   ),
-                ],
-              ),
+                  child: const Text("Top Up", style: TextStyle(color: Colors.white)),
+                ),
+                const SizedBox(height: 15),
+                ElevatedButton(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const WithdrawPensiun()),
+                    );
+                    context.read<MainpensiunBloc>().add(FetchMainPensiun());
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 244, 55, 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    minimumSize: const Size.fromHeight(40),
+                  ),
+                  child: const Text("Withdraw", style: TextStyle(color: Colors.white)),
+                ),
+              ],
             ),
-          ),
-
-          const SizedBox(height: 50),
-
-          // Detail
-          const Text(
-            "Rencana Dana Pensiun",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 12),
-          _infoRow("Target", "Rp ${_formatRupiah(pension.targetAmount)}"),
-          _infoRow("Terkumpul", "Rp ${_formatRupiah(pension.currentAmount)}"),
-          _infoRow("Deskripsi", pension.description),
-          _infoRow(
-            "Deadline",
-            "${pension.deadline.day}/${pension.deadline.month}/${pension.deadline.year}",
-          ),
-
-          const SizedBox(height: 32),
-
-          // Button
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const TopUpPensiun()),
-              ).then((_) => onRefresh());
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary800,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              minimumSize: const Size.fromHeight(40),
-            ),
-            child: const Text("Top Up", style: TextStyle(color: Colors.white)),
-          ),
-          const SizedBox(height: 15),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const WithdrawPensiun()),
-              ).then((_) => onRefresh());
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 244, 55, 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              minimumSize: const Size.fromHeight(40),
-            ),
-            child: const Text("Withdraw", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+          );
+        }
+        return const SizedBox();
+      },
     );
   }
 
