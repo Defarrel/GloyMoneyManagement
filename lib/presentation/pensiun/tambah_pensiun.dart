@@ -17,7 +17,6 @@ class TambahPensiun extends StatefulWidget {
 class _TambahPensiunState extends State<TambahPensiun> {
   final _formKey = GlobalKey<FormState>();
   final _targetController = TextEditingController();
-  final _descriptionController = TextEditingController();
   final _deadlineController = TextEditingController();
   final _repo = PensionRepository(ServiceHttpClient());
   bool _isLoading = false;

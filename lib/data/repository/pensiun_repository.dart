@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gloymoneymanagement/data/models/request/pensiun/pensiun_request_model.dart';
-import 'package:gloymoneymanagement/data/models/request/pensiun/withdraw_pensiun_request_model.dart';
+import 'package:gloymoneymanagement/data/models/request/pensiun/pensiun_amount_request_model.dart.dart';
 import 'package:gloymoneymanagement/data/models/response/pensiun/pensiun_response_model.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
 import 'package:http/http.dart' as http;
@@ -34,7 +34,7 @@ class PensionRepository {
     AddPensionRequestModel model,
   ) async {
     try {
-      final http.Response response = await _serviceHttpClient.post(
+      final http.Response response = await _serviceHttpClient.postWithToken(
         'pensiun/add',
         model.toMap(),
       );
@@ -52,10 +52,10 @@ class PensionRepository {
   }
 
   Future<Either<String, String>> withdrawPension(
-    WithdrawPensionRequestModel model,
+    PensiunAmountRequestModel model,
   ) async {
     try {
-      final http.Response response = await _serviceHttpClient.post(
+      final http.Response response = await _serviceHttpClient.postWithToken(
         'pensiun/withdraw',
         model.toMap(),
       );
@@ -69,6 +69,27 @@ class PensionRepository {
     } catch (e) {
       log('Withdraw pension error: $e');
       return Left('Terjadi kesalahan saat menarik dana pensiun');
+    }
+  }
+
+  Future<Either<String, String>> topUpPension(
+    PensiunAmountRequestModel model,
+  ) async {
+    try {
+      final http.Response response = await _serviceHttpClient.postWithToken(
+        'pensiun/topup', 
+        model.toMap(),
+      );
+      final jsonRes = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        return Right(jsonRes['message']);
+      } else {
+        return Left(jsonRes['message'] ?? 'Gagal top up dana pensiun');
+      }
+    } catch (e) {
+      log('Top up pension error: $e');
+      return Left('Terjadi kesalahan saat top up dana pensiun');
     }
   }
 }

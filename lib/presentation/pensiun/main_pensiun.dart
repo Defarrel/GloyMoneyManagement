@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/response/pensiun/pensiun_response_model.dart';
+import 'package:gloymoneymanagement/presentation/pensiun/topup_pensiun.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class MainPensiun extends StatelessWidget {
@@ -29,13 +30,6 @@ class MainPensiun extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
-          const Text(
-            "Dana Pensiun",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 24),
-
           // Section Icon + Judul
           Row(
             children: [
@@ -98,7 +92,7 @@ class MainPensiun extends StatelessWidget {
 
           // Detail
           const Text(
-            "Detail Rencana",
+            "Rencana Dana Pensiun",
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 12),
@@ -114,7 +108,12 @@ class MainPensiun extends StatelessWidget {
 
           // Button
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const TopUpPensiun()),
+              ).then((_) => onRefresh());
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary800,
               shape: RoundedRectangleBorder(
