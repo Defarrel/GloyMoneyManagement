@@ -3,6 +3,9 @@ import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/response/transaksi/transaction_response_model.dart';
 import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
+import 'package:gloymoneymanagement/presentation/home/pages/home_root.dart';
+import 'package:gloymoneymanagement/presentation/menabung/saving_screen.dart';
+import 'package:gloymoneymanagement/presentation/pensiun/pensiun_screen.dart';
 import 'package:gloymoneymanagement/presentation/transaksi/pages/riwayat_transaksi.dart';
 import 'package:gloymoneymanagement/presentation/transaksi/pages/tambah_transaksi.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
@@ -33,7 +36,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final result = await _repo.getTransactions();
     result.fold(
       (error) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error)));
         setState(() => _isLoading = false);
       },
       (data) {
@@ -66,10 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
-      appBar: CustomAppBar(
-        title: "Gloy Money Management",
-        showLogo: true,
-      ),
+      appBar: CustomAppBar(title: "Gloy Money Management", showLogo: true),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -130,8 +132,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ).then((_) => _loadTransactions());
                   }),
                   _homeMenuItem(Icons.bar_chart, "Portofolio", () {}),
-                  _homeMenuItem(Icons.savings, "Menabung", () {}),
-                  _homeMenuItem(Icons.timelapse, "Pensiun", () {}),
+                  _homeMenuItem(Icons.savings, "Menabung", () {
+                    HomeRoot.navigateToTab(context, 1);
+                  }),
+                  _homeMenuItem(Icons.timelapse, "Pensiun", () {
+                    HomeRoot.navigateToTab(context, 2);
+                  }),
                 ],
               ),
             ),
@@ -188,9 +194,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Total Investasi", style: TextStyle(fontSize: 12)),
+                            Text(
+                              "Total Investasi",
+                              style: TextStyle(fontSize: 12),
+                            ),
                             SizedBox(height: 4),
-                            Text("Rp 3.000.000", style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                              "Rp 3.000.000",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                       ),

@@ -1,12 +1,18 @@
+// home_root.dart
 import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/components/custom_bottom_nav_bar.dart';
 import 'package:gloymoneymanagement/presentation/home/pages/home_screen.dart';
+import 'package:gloymoneymanagement/presentation/menabung/saving_screen.dart';
 import 'package:gloymoneymanagement/presentation/pensiun/pensiun_screen.dart';
 import 'package:gloymoneymanagement/presentation/akun/profile_screen.dart';
-import 'package:gloymoneymanagement/presentation/menabung/saving_screen.dart';
 
 class HomeRoot extends StatefulWidget {
   const HomeRoot({super.key});
+
+  static void navigateToTab(BuildContext context, int index) {
+    final state = context.findAncestorStateOfType<_HomeRootState>();
+    state?._onTap(index);
+  }
 
   @override
   State<HomeRoot> createState() => _HomeRootState();
@@ -38,10 +44,7 @@ class _HomeRootState extends State<HomeRoot> with TickerProviderStateMixin {
     );
 
     _fadeAnimations = _fadeControllers
-        .map(
-          (controller) =>
-              Tween<double>(begin: 0.0, end: 1.0).animate(controller),
-        )
+        .map((controller) => Tween<double>(begin: 0.0, end: 1.0).animate(controller))
         .toList();
 
     _fadeControllers[_currentIndex].forward();
