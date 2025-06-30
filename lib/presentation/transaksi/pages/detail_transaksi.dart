@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/core/core.dart';
 import 'package:gloymoneymanagement/data/models/response/transaksi/transaction_response_model.dart';
 import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
@@ -67,8 +68,9 @@ class DetailTransaksi extends StatelessWidget {
     ).format(transaksi.date);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Detail Transaksi"),
+      appBar: CustomAppBar(
+        title: "Detail Transaksi",
+        showLogo: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.red),

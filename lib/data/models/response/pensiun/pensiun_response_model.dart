@@ -24,24 +24,31 @@ class PensionResponseModel {
 
   factory PensionResponseModel.fromMap(Map<String, dynamic> map) =>
       PensionResponseModel(
-        id: map["id"],
-        userId: map["user_id"],
+        id: _parseToInt(map["id"]),
+        userId: _parseToInt(map["user_id"]),
         title: map["title"],
-        targetAmount: map["target_amount"],
-        currentAmount: map["current_amount"],
+        targetAmount: _parseToInt(map["target_amount"]),
+        currentAmount: _parseToInt(map["current_amount"]),
         description: map["description"],
         deadline: DateTime.parse(map["deadline"]),
       );
 
+  static int _parseToInt(dynamic value) {
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value.split(".")[0]) ?? 0;
+    return 0;
+  }
+
   String toJson() => json.encode(toMap());
 
   Map<String, dynamic> toMap() => {
-        "id": id,
-        "user_id": userId,
-        "title": title,
-        "target_amount": targetAmount,
-        "current_amount": currentAmount,
-        "description": description,
-        "deadline": deadline.toIso8601String(),
-      };
+    "id": id,
+    "user_id": userId,
+    "title": title,
+    "target_amount": targetAmount,
+    "current_amount": currentAmount,
+    "description": description,
+    "deadline": deadline.toIso8601String(),
+  };
 }

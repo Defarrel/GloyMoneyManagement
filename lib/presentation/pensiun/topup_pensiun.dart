@@ -2,49 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/core/components/custom_text_field_2.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
-import 'package:gloymoneymanagement/data/models/request/pensiun/pensiun_request_model.dart';
+import 'package:gloymoneymanagement/data/models/request/pensiun/withdraw_pensiun_request_model.dart';
 import 'package:gloymoneymanagement/data/repository/pensiun_repository.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
-import 'package:intl/intl.dart';
 
-class TambahPensiun extends StatefulWidget {
-  const TambahPensiun({super.key});
+class TopUpPensiun extends StatefulWidget {
+  const TopUpPensiun({super.key});
 
   @override
-  State<TambahPensiun> createState() => _TambahPensiunState();
+  State<TopUpPensiun> createState() => _TopUpPensiunState();
 }
 
-class _TambahPensiunState extends State<TambahPensiun> {
+class _TopUpPensiunState extends State<TopUpPensiun> {
   final _formKey = GlobalKey<FormState>();
-  final _targetController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _deadlineController = TextEditingController();
+  final _amountController = TextEditingController();
   final _repo = PensionRepository(ServiceHttpClient());
   bool _isLoading = false;
-
-  Future<void> _selectDate() async {
-    final selected = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now().add(const Duration(days: 30)),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-    );
-    if (selected != null) {
-      _deadlineController.text = DateFormat('yyyy-MM-dd').format(selected);
-    }
-  }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
-    final model = AddPensionRequestModel(
-      targetAmount: int.parse(_targetController.text),
-      deadline: _deadlineController.text,
+    final model = WithdrawPensionRequestModel(
+      amount: int.parse(_amountController.text),
     );
 
-    final result = await _repo.addPension(model);
+    final result = await _repo.withdrawPension(model);
     result.fold(
       (err) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err))),
       (msg) {
@@ -59,7 +43,7 @@ class _TambahPensiunState extends State<TambahPensiun> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: "Tambah Dana Pensiun", showLogo: false),
+      appBar: const CustomAppBar(title: "Top Up Dana Pensiun", showLogo: false),
       backgroundColor: const Color(0xFFF4F6F8),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -68,19 +52,10 @@ class _TambahPensiunState extends State<TambahPensiun> {
           child: Column(
             children: [
               CustomTextField2(
-                controller: _targetController,
-                label: "Target Dana (Rp)",
+                controller: _amountController,
+                label: "Jumlah Top Up (Rp)",
                 keyboardType: TextInputType.number,
-                validator: "Target tidak boleh kosong",
-              ),
-              const SizedBox(height: 16),
-              CustomTextField2(
-                controller: _deadlineController,
-                label: "Deadline",
-                readOnly: true,
-                onTap: _selectDate,
-                suffixIcon: const Icon(Icons.calendar_today),
-                validator: "Deadline wajib diisi",
+                validator: "Jumlah tidak boleh kosong",
               ),
               const SizedBox(height: 24),
               ElevatedButton(
@@ -91,7 +66,7 @@ class _TambahPensiunState extends State<TambahPensiun> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 child: Text(
-                  _isLoading ? 'Menyimpan...' : 'Simpan Dana Pensiun',
+                  _isLoading ? 'Mengirim...' : 'Kirim Top Up',
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
