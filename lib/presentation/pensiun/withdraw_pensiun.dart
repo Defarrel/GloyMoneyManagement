@@ -4,6 +4,7 @@ import 'package:gloymoneymanagement/core/components/custom_text_field_2.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/request/pensiun/pensiun_amount_request_model.dart.dart';
 import 'package:gloymoneymanagement/data/repository/pensiun_repository.dart';
+import 'package:gloymoneymanagement/presentation/transaksi/pages/done_page.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
 
 class WithdrawPensiun extends StatefulWidget {
@@ -30,10 +31,17 @@ class _WithdrawPensiunState extends State<WithdrawPensiun> {
 
     final result = await _repo.withdrawPension(model);
     result.fold(
-      (err) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err))),
+      (err) => ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(err))),
       (msg) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-        Navigator.pop(context);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const DonePage()),
+        );
       },
     );
 

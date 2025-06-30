@@ -19,7 +19,7 @@ class DonePage extends StatelessWidget {
                   width: 200,
                   height: 200,
                   child: Lottie.asset(
-                    'lib/core/assets/lottie/Animation - 1751097954792.json',
+                    'lib/core/assets/lottie/succes.json',
                     repeat: true,
                   ),
                 ),
