@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
+import 'package:gloymoneymanagement/data/models/response/pensiun/pensiun_response_model.dart';
 import 'package:gloymoneymanagement/data/models/response/transaksi/transaction_response_model.dart';
+import 'package:gloymoneymanagement/data/repository/pensiun_repository.dart';
 import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
 import 'package:gloymoneymanagement/presentation/home/pages/home_root.dart';
-import 'package:gloymoneymanagement/presentation/menabung/saving_screen.dart';
-import 'package:gloymoneymanagement/presentation/pensiun/pensiun_screen.dart';
 import 'package:gloymoneymanagement/presentation/transaksi/pages/riwayat_transaksi.dart';
 import 'package:gloymoneymanagement/presentation/transaksi/pages/tambah_transaksi.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
@@ -18,8 +18,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _repo = TransactionRepository(ServiceHttpClient());
+  final _transactionRepo = TransactionRepository(ServiceHttpClient());
+  final _pensionRepo = PensionRepository(ServiceHttpClient());
+
   List<TransactionResponseModel> _transactions = [];
+  PensionResponseModel? _pension;
   int _saldo = 0;
   int _pemasukan = 0;
   int _pengeluaran = 0;
@@ -28,18 +31,22 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadTransactions();
+    _loadAll();
+  }
+
+  Future<void> _loadAll() async {
+    setState(() => _isLoading = true);
+    await Future.wait([_loadTransactions(), _loadPension()]);
+    setState(() => _isLoading = false);
   }
 
   Future<void> _loadTransactions() async {
-    setState(() => _isLoading = true);
-    final result = await _repo.getTransactions();
+    final result = await _transactionRepo.getTransactions();
     result.fold(
       (error) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(error)));
-        setState(() => _isLoading = false);
       },
       (data) {
         final pemasukan = data
@@ -48,13 +55,25 @@ class _HomeScreenState extends State<HomeScreen> {
         final pengeluaran = data
             .where((t) => t.type.toLowerCase() == 'pengeluaran')
             .fold<int>(0, (sum, t) => sum + t.amount.toInt());
-        setState(() {
-          _transactions = data;
-          _pemasukan = pemasukan;
-          _pengeluaran = pengeluaran;
-          _saldo = pemasukan - pengeluaran;
-          _isLoading = false;
-        });
+
+        _transactions = data;
+        _pemasukan = pemasukan;
+        _pengeluaran = pengeluaran;
+        _saldo = pemasukan - pengeluaran;
+      },
+    );
+  }
+
+  Future<void> _loadPension() async {
+    final result = await _pensionRepo.getPension();
+    result.fold(
+      (error) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error)));
+      },
+      (data) {
+        _pension = data;
       },
     );
   }
@@ -72,180 +91,207 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
       appBar: CustomAppBar(title: "Gloy Money Management", showLogo: true),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Saldo Header
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Saldo Anda",
-                    style: TextStyle(color: Colors.black54),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _isLoading ? "Memuat..." : "Rp ${_formatRupiah(_saldo)}",
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          "Pengeluaran\nRp ${_formatRupiah(_pengeluaran)}",
-                          style: const TextStyle(color: Colors.red),
-                        ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadAll,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    // Saldo Header
+                    Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 20,
                       ),
-                      Expanded(
-                        child: Text(
-                          "Pemasukan\nRp ${_formatRupiah(_pemasukan)}",
-                          style: const TextStyle(color: Colors.green),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Menu Navigasi
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _homeMenuItem(Icons.receipt, "Transaksi", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const RiwayatTransaksi(),
-                      ),
-                    ).then((_) => _loadTransactions());
-                  }),
-                  _homeMenuItem(Icons.bar_chart, "Portofolio", () {}),
-                  _homeMenuItem(Icons.savings, "Menabung", () {
-                    HomeRoot.navigateToTab(context, 1);
-                  }),
-                  _homeMenuItem(Icons.timelapse, "Pensiun", () {
-                    HomeRoot.navigateToTab(context, 2);
-                  }),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Tombol Transaksi Baru
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const TambahTransaksi()),
-                  ).then((_) => _loadTransactions());
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary800,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  minimumSize: const Size.fromHeight(40),
-                ),
-                child: const Text(
-                  "Transaksi Baru",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Kartu Rencana Pensiun
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.15),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("Rencana Pensiun"),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: const [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Total Investasi",
-                              style: TextStyle(fontSize: 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Saldo Anda",
+                            style: TextStyle(color: Colors.black54),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Rp ${_formatRupiah(_saldo)}",
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
-                            SizedBox(height: 4),
-                            Text(
-                              "Rp 3.000.000",
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  "Pengeluaran\nRp ${_formatRupiah(_pengeluaran)}",
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  "Pemasukan\nRp ${_formatRupiah(_pemasukan)}",
+                                  style: const TextStyle(color: Colors.green),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Menu Navigasi
+                    Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 20,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _homeMenuItem(Icons.receipt, "Transaksi", () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const RiwayatTransaksi(),
+                              ),
+                            ).then((_) => _loadAll());
+                          }),
+                          _homeMenuItem(Icons.bar_chart, "Portofolio", () {}),
+                          _homeMenuItem(Icons.savings, "Menabung", () {
+                            HomeRoot.navigateToTab(context, 1);
+                          }),
+                          _homeMenuItem(Icons.timelapse, "Pensiun", () {
+                            HomeRoot.navigateToTab(context, 2);
+                          }),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Tombol Transaksi Baru
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const TambahTransaksi(),
+                            ),
+                          ).then((_) => _loadAll());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary800,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          minimumSize: const Size.fromHeight(40),
+                        ),
+                        child: const Text(
+                          "Transaksi Baru",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Kartu Pensiun
+                    if (_pension != null)
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.15),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
                             ),
                           ],
                         ),
-                      ),
-                      Expanded(
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Keuntungan", style: TextStyle(fontSize: 12)),
-                            SizedBox(height: 4),
-                            Text(
-                              "Rp 540.000",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
+                            const Text(
+                              "Rencana Pensiun",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        "Total Investasi",
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "Rp ${_formatRupiah(_pension!.currentAmount)}",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      const Text(
+                                        "Target",
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "Rp ${_formatRupiah(_pension!.targetAmount)}",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: () {
+                                HomeRoot.navigateToTab(context, 2);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary800,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                minimumSize: const Size.fromHeight(40),
+                              ),
+                              child: const Text(
+                                "Top Up",
+                                style: TextStyle(color: Colors.white),
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary800,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      minimumSize: const Size.fromHeight(40),
-                    ),
-                    child: const Text(
-                      "Top Up",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
+
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
     );
   }
 
