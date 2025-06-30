@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/response/pensiun/pensiun_response_model.dart';
 import 'package:gloymoneymanagement/presentation/pensiun/topup_pensiun.dart';
+import 'package:gloymoneymanagement/presentation/pensiun/withdraw_pensiun.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class MainPensiun extends StatelessWidget {
@@ -122,6 +123,23 @@ class MainPensiun extends StatelessWidget {
               minimumSize: const Size.fromHeight(40),
             ),
             child: const Text("Top Up", style: TextStyle(color: Colors.white)),
+          ),
+          const SizedBox(height: 15),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const WithdrawPensiun()),
+              ).then((_) => onRefresh());
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(255, 244, 55, 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              minimumSize: const Size.fromHeight(40),
+            ),
+            child: const Text("Withdraw", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
