@@ -28,12 +28,3 @@ class TambahpensiunFailure extends TambahpensiunState {
   @override
   List<Object> get props => [error];
 }
-
-class DeadlinePicked extends TambahpensiunState {
-  final String deadline;
-
-  const DeadlinePicked(this.deadline);
-
-  @override
-  List<Object> get props => [deadline];
-}

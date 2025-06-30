@@ -19,12 +19,3 @@ class SubmitTambahPensiun extends TambahpensiunEvent {
   @override
   List<Object> get props => [targetAmount, deadline];
 }
-
-class SelectDeadline extends TambahpensiunEvent {
-  final BuildContext context;
-
-  const SelectDeadline(this.context);
-
-  @override
-  List<Object> get props => [context];
-}
