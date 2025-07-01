@@ -46,7 +46,7 @@ class SavingRepository {
     SavingRequestModel request,
   ) async {
     try {
-      final http.Response res = await _client.post('savings', request.toMap());
+      final http.Response res = await _client.postWithToken('savings', request.toMap());
       final data = json.decode(res.body);
       return Right(data['message']);
     } catch (e) {

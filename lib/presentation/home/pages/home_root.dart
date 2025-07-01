@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/components/custom_bottom_nav_bar.dart';
 import 'package:gloymoneymanagement/presentation/home/pages/home_screen.dart';
-import 'package:gloymoneymanagement/presentation/menabung/saving_screen.dart';
+import 'package:gloymoneymanagement/presentation/menabung/pages/saving_screen.dart';
 import 'package:gloymoneymanagement/presentation/pensiun/pages/pensiun_screen.dart';
 import 'package:gloymoneymanagement/presentation/akun/profile_screen.dart';
 

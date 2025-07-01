@@ -24,11 +24,13 @@ class SavingResponseModel {
 
   factory SavingResponseModel.fromMap(Map<String, dynamic> map) =>
       SavingResponseModel(
-        id: map['id'],
-        userId: map['user_id'],
+        id: int.parse(map['id'].toString()),
+        userId: int.parse(map['user_id'].toString()),
         title: map['title'],
-        targetAmount: map['target_amount'],
-        currentAmount: map['current_amount'],
+        targetAmount:
+            double.tryParse(map['target_amount'].toString())?.toInt() ?? 0,
+        currentAmount:
+            double.tryParse(map['current_amount'].toString())?.toInt() ?? 0,
         deadline: map['deadline'],
         ownerName: map['owner_name'] ?? '',
       );
@@ -36,12 +38,12 @@ class SavingResponseModel {
   String toJson() => json.encode(toMap());
 
   Map<String, dynamic> toMap() => {
-        "id": id,
-        "user_id": userId,
-        "title": title,
-        "target_amount": targetAmount,
-        "current_amount": currentAmount,
-        "deadline": deadline,
-        "owner_name": ownerName,
-      };
+    "id": id,
+    "user_id": userId,
+    "title": title,
+    "target_amount": targetAmount,
+    "current_amount": currentAmount,
+    "deadline": deadline,
+    "owner_name": ownerName,
+  };
 }
