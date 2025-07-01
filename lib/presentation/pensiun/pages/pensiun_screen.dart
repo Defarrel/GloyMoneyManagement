@@ -3,8 +3,8 @@ import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/response/pensiun/pensiun_response_model.dart';
 import 'package:gloymoneymanagement/data/repository/pensiun_repository.dart';
-import 'package:gloymoneymanagement/presentation/pensiun/main_pensiun.dart';
-import 'package:gloymoneymanagement/presentation/pensiun/tambah_pensiun.dart';
+import 'package:gloymoneymanagement/presentation/pensiun/pages/main_pensiun.dart';
+import 'package:gloymoneymanagement/presentation/pensiun/pages/tambah_pensiun.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
 
 class PensiunScreen extends StatefulWidget {

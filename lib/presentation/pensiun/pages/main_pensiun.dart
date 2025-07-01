@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/response/pensiun/pensiun_response_model.dart';
-import 'package:gloymoneymanagement/presentation/pensiun/topup_pensiun.dart';
+import 'package:gloymoneymanagement/presentation/pensiun/pages/topup_pensiun.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class MainPensiun extends StatelessWidget {
