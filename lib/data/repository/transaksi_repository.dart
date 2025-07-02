@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:dartz/dartz.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gloymoneymanagement/data/models/request/transaksi/transaction_request_model.dart';
 import 'package:gloymoneymanagement/data/models/response/transaksi/transaction_response_model.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
@@ -9,7 +8,6 @@ import 'package:http/http.dart' as http;
 
 class TransactionRepository {
   final ServiceHttpClient _serviceHttpClient;
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   TransactionRepository(this._serviceHttpClient);
 

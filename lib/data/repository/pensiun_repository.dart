@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:dartz/dartz.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gloymoneymanagement/data/models/request/pensiun/pensiun_request_model.dart';
 import 'package:gloymoneymanagement/data/models/request/pensiun/pensiun_amount_request_model.dart.dart';
 import 'package:gloymoneymanagement/data/models/response/pensiun/pensiun_response_model.dart';
@@ -10,7 +9,6 @@ import 'package:http/http.dart' as http;
 
 class PensionRepository {
   final ServiceHttpClient _serviceHttpClient;
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   PensionRepository(this._serviceHttpClient);
 

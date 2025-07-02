@@ -8,6 +8,7 @@ class SavingResponseModel {
   final int currentAmount;
   final String deadline;
   final String ownerName;
+  final List<MemberModel> members;
 
   SavingResponseModel({
     required this.id,
@@ -17,6 +18,7 @@ class SavingResponseModel {
     required this.currentAmount,
     required this.deadline,
     required this.ownerName,
+    required this.members,
   });
 
   factory SavingResponseModel.fromJson(String str) =>
@@ -33,17 +35,28 @@ class SavingResponseModel {
             double.tryParse(map['current_amount'].toString())?.toInt() ?? 0,
         deadline: map['deadline'],
         ownerName: map['owner_name'] ?? '',
+        members: map['members'] != null
+            ? List<MemberModel>.from(
+                (map['members'] as List<dynamic>).map(
+                  (x) => MemberModel.fromMap(x),
+                ),
+              )
+            : [],
       );
+}
 
-  String toJson() => json.encode(toMap());
+class MemberModel {
+  final int id;
+  final String name;
+  final int amount;
 
-  Map<String, dynamic> toMap() => {
-    "id": id,
-    "user_id": userId,
-    "title": title,
-    "target_amount": targetAmount,
-    "current_amount": currentAmount,
-    "deadline": deadline,
-    "owner_name": ownerName,
-  };
+  MemberModel({required this.id, required this.name, required this.amount});
+
+  factory MemberModel.fromMap(Map<String, dynamic> map) => MemberModel(
+    id: int.parse(map['id'].toString()),
+    name: map['name'],
+    amount: double.tryParse(map['amount'].toString())?.toInt() ?? 0,
+  );
+
+  Map<String, dynamic> toMap() => {"id": id, "name": name, "amount": amount};
 }

@@ -10,18 +10,20 @@ import 'package:gloymoneymanagement/services/service_http_client.dart';
 import 'package:http/http.dart' as http;
 
 class SavingRepository {
-  final ServiceHttpClient _client;
+  final ServiceHttpClient _serviceHttpClient;
 
-  SavingRepository(this._client);
+  SavingRepository(this._serviceHttpClient);
 
-  // GET all savings
+  /// GET all savings
   Future<Either<String, List<SavingResponseModel>>> getAllSavings() async {
     try {
-      final http.Response res = await _client.get('savings');
+      final http.Response res = await _serviceHttpClient.get('savings');
       final List<dynamic> jsonList = json.decode(res.body);
+
       final savings = jsonList
           .map((e) => SavingResponseModel.fromMap(e))
           .toList();
+
       return Right(savings);
     } catch (e) {
       log("getAllSavings error: $e");
@@ -29,10 +31,11 @@ class SavingRepository {
     }
   }
 
-  // GET saving detail by ID
+  /// GET saving detail by ID
   Future<Either<String, SavingResponseModel>> getSavingDetail(int id) async {
     try {
-      final http.Response res = await _client.get('savings/$id');
+      final http.Response res = await _serviceHttpClient.get('savings/$id');
+
       final data = SavingResponseModel.fromJson(res.body);
       return Right(data);
     } catch (e) {
@@ -41,12 +44,15 @@ class SavingRepository {
     }
   }
 
-  // POST create new saving
+  /// POST create new saving
   Future<Either<String, String>> createSaving(
     SavingRequestModel request,
   ) async {
     try {
-      final http.Response res = await _client.postWithToken('savings', request.toMap());
+      final http.Response res = await _serviceHttpClient.postWithToken(
+        'savings',
+        request.toMap(),
+      );
       final data = json.decode(res.body);
       return Right(data['message']);
     } catch (e) {
@@ -55,13 +61,13 @@ class SavingRepository {
     }
   }
 
-  // POST top-up contribution to joint saving
+  /// PUT top-up contribution to joint saving
   Future<Either<String, String>> contributeToSaving(
     int savingId,
     JointSavingRequestModel request,
   ) async {
     try {
-      final http.Response res = await _client.put(
+      final http.Response res = await _serviceHttpClient.put(
         'savings/$savingId/contribute',
         request.toMap(),
       );
@@ -73,18 +79,20 @@ class SavingRepository {
     }
   }
 
-  // GET contributions history
+  /// GET contributions history
   Future<Either<String, List<JointSavingResponseModel>>> getContributions(
     int savingId,
   ) async {
     try {
-      final http.Response res = await _client.get(
+      final http.Response res = await _serviceHttpClient.get(
         'savings/$savingId/contributions',
       );
       final List<dynamic> jsonList = json.decode(res.body);
+
       final contributions = jsonList
           .map((e) => JointSavingResponseModel.fromMap(e))
           .toList();
+
       return Right(contributions);
     } catch (e) {
       log("getContributions error: $e");
