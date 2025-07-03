@@ -106,24 +106,23 @@ class _MapPageState extends State<MapPage> {
   void _confirmSelection() {
     showDialog(
       context: context,
-      builder:
-          (_) => AlertDialog(
-            title: const Text('Konfirmasi Alamat'),
-            content: Text(_pickedAddress ?? ''),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Batal'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context, _pickedAddress);
-                },
-                child: const Text('Pilih'),
-              ),
-            ],
+      builder: (_) => AlertDialog(
+        title: const Text('Konfirmasi Alamat'),
+        content: Text(_pickedAddress ?? ''),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
           ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context, _pickedAddress);
+            },
+            child: const Text('Pilih'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -155,38 +154,24 @@ class _MapPageState extends State<MapPage> {
               markers: _pickedAddress != null ? {_pickedMarker!} : {},
               onTap: _onTap,
             ),
-            Positioned(
-              top: 250,
-              left: 56,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Text(_currentAddress ?? ''),
-              ),
-            ),
             if (_pickedAddress != null)
               Positioned(
-                bottom: 120,
-                left: 16,
-
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Text(
-                      _pickedAddress!,
-                      style: const TextStyle(fontSize: 16),
-                    ),
+                top: 250,
+                left: 56,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
+                  child: Text(_currentAddress ?? ''),
                 ),
               ),
           ],
@@ -194,28 +179,28 @@ class _MapPageState extends State<MapPage> {
       ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           const SizedBox(height: 8),
           if (_pickedAddress != null)
-          FloatingActionButton.extended(
-            onPressed: _confirmSelection,
-            heroTag: 'Confirm',
-            label: const Text('Pilih Alamat'),
-          ),
+            FloatingActionButton.extended(
+              onPressed: _confirmSelection,
+              heroTag: 'Confirm',
+              label: const Text('Pilih Alamat'),
+            ),
 
           const SizedBox(height: 8),
           if (_pickedAddress != null)
-          FloatingActionButton.extended(
-            heroTag: 'Clear',
-            label: const Text('Hapus Alamat'),
-            onPressed: () {
-              setState(() {
-                _pickedAddress = null;
-                _pickedMarker = null;
-              });
-            },
-          )
+            FloatingActionButton.extended(
+              heroTag: 'Clear',
+              label: const Text('Hapus Alamat'),
+              onPressed: () {
+                setState(() {
+                  _pickedAddress = null;
+                  _pickedMarker = null;
+                });
+              },
+            ),
         ],
       ),
     );
