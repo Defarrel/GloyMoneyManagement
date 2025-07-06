@@ -4,6 +4,7 @@ import 'package:gloymoneymanagement/core/components/custom_text_field.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/core/components/spaces.dart';
 import 'package:gloymoneymanagement/data/models/request/auth/login_request_model.dart';
+import 'package:gloymoneymanagement/presentation/advisor/home/pages/home_screen.dart';
 import 'package:gloymoneymanagement/presentation/user/auth/bloc/login/login_bloc.dart';
 import 'package:gloymoneymanagement/presentation/user/home/pages/home_root.dart';
 import 'package:gloymoneymanagement/presentation/user/auth/pages/register_screen.dart';
@@ -19,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
   bool isShowPassword = false;
 
   @override
@@ -46,7 +48,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         children: [
                           const SpaceHeight(80),
-                          Image.asset('lib/core/assets/images/logo.png', width: 120),
+                          Image.asset(
+                            'lib/core/assets/images/logo.png',
+                            width: 120,
+                          ),
                           const SpaceHeight(16),
                           Text(
                             'Selamat Datang Kembali',
@@ -78,10 +83,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             obscureText: !isShowPassword,
                             prefixIcon: const Icon(Icons.lock),
                             suffixIcon: IconButton(
-                              onPressed: () =>
-                                  setState(() => isShowPassword = !isShowPassword),
+                              onPressed: () => setState(
+                                () => isShowPassword = !isShowPassword,
+                              ),
                               icon: Icon(
-                                isShowPassword ? Icons.visibility : Icons.visibility_off,
+                                isShowPassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
                                 color: AppColors.grey,
                               ),
                             ),
@@ -102,10 +110,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                     backgroundColor: AppColors.primary,
                                   ),
                                 );
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const HomeRoot()),
-                                );
+                                final role = state.responseModel.user?.role;
+                                if (role == 'advisor') {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const HomeScreen(),
+                                    ),
+                                  );
+                                } else {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const HomeRoot(),
+                                    ),
+                                  );
+                                }
                               }
                             },
                             builder: (context, state) {
@@ -116,14 +137,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                   onPressed: state is LoginLoading
                                       ? null
                                       : () {
-                                          if (_formKey.currentState!.validate()) {
+                                          if (_formKey.currentState!
+                                              .validate()) {
                                             final request = LoginRequestModel(
-                                              email: _emailController.text.trim(),
-                                              password: _passwordController.text.trim(),
+                                              email: _emailController.text
+                                                  .trim(),
+                                              password: _passwordController.text
+                                                  .trim(),
                                             );
                                             context.read<LoginBloc>().add(
-                                                  LoginRequested(requestModel: request),
-                                                );
+                                              LoginRequested(
+                                                requestModel: request,
+                                              ),
+                                            );
                                           }
                                         },
                                   style: ElevatedButton.styleFrom(
@@ -139,7 +165,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                         )
                                       : const Text(
                                           "Masuk",
-                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                 ),
                               );
@@ -149,7 +177,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextButton(
                             onPressed: () => Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                              MaterialPageRoute(
+                                builder: (_) => const RegisterScreen(),
+                              ),
                             ),
                             child: const Text(
                               'Belum punya akun? Daftar',
