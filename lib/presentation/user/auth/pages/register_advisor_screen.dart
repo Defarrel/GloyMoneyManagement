@@ -8,16 +8,15 @@ import 'package:gloymoneymanagement/presentation/user/auth/bloc/register/registe
 import 'package:gloymoneymanagement/presentation/user/auth/bloc/register/register_event.dart';
 import 'package:gloymoneymanagement/presentation/user/auth/bloc/register/register_state.dart';
 import 'package:gloymoneymanagement/presentation/user/auth/pages/login_screen.dart';
-import 'package:gloymoneymanagement/presentation/user/auth/pages/register_advisor_screen.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+class RegisterAdvisorScreen extends StatefulWidget {
+  const RegisterAdvisorScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<RegisterAdvisorScreen> createState() => _RegisterAdvisorScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterAdvisorScreenState extends State<RegisterAdvisorScreen> {
   final _formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
   final emailController = TextEditingController();
@@ -50,14 +49,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               children: [
                 const SpaceHeight(80),
-                Image.asset(
-                  'lib/core/assets/images/logo.png',
-                  width: 120,
-                  height: 120,
-                ),
+                Image.asset('lib/core/assets/images/logo.png', width: 120, height: 120),
                 const SpaceHeight(10),
                 Text(
-                  'Daftar Akun GMM',
+                  'Daftar Advisor GMM',
                   style: theme.textTheme.headlineSmall?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -67,12 +62,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 BlocConsumer<RegisterBloc, RegisterState>(
                   listener: (context, state) {
                     if (state is RegisterFailure) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text(state.error)));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(state.error)),
+                      );
                     } else if (state is RegisterSuccess) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Pendaftaran berhasil!")),
+                        const SnackBar(content: Text("Pendaftaran advisor berhasil!")),
                       );
                       Navigator.pushReplacement(
                         context,
@@ -105,13 +100,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           obscureText: !isShowPassword,
                           prefixIcon: const Icon(Icons.lock),
                           suffixIcon: IconButton(
-                            onPressed: () => setState(
-                              () => isShowPassword = !isShowPassword,
-                            ),
+                            onPressed: () =>
+                                setState(() => isShowPassword = !isShowPassword),
                             icon: Icon(
-                              isShowPassword
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
+                              isShowPassword ? Icons.visibility : Icons.visibility_off,
                               color: AppColors.grey,
                             ),
                           ),
@@ -128,15 +120,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       final request = RegisterRequestModel(
                                         name: nameController.text.trim(),
                                         email: emailController.text.trim(),
-                                        password: passwordController.text
-                                            .trim(),
-                                        role: "user",
+                                        password: passwordController.text.trim(),
+                                        role: "advisor", 
                                       );
                                       context.read<RegisterBloc>().add(
-                                        RegisterRequested(
-                                          requestModel: request,
-                                        ),
-                                      );
+                                            RegisterRequested(requestModel: request),
+                                          );
                                     }
                                   },
                             style: ElevatedButton.styleFrom(
@@ -147,15 +136,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                             ),
                             child: state is RegisterLoading
-                                ? const CircularProgressIndicator(
-                                    color: AppColors.primary,
-                                  )
-                                : const Text(
-                                    "Daftar",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                ? const CircularProgressIndicator(color: AppColors.primary)
+                                : const Text("Daftar Advisor", style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],
@@ -164,26 +146,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SpaceHeight(20),
                 TextButton(
-                  onPressed: () => Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  ),
+                  onPressed: () => Navigator.pop(context),
                   child: const Text(
-                    "Sudah punya akun? Masuk",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const RegisterAdvisorScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    "Daftar sebagai Financial Advisor",
+                    "Kembali ke Daftar User",
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
