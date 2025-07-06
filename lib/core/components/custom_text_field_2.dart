@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gloymoneymanagement/core/core.dart';
 
 class CustomTextField2 extends StatelessWidget {
   final TextEditingController controller;

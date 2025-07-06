@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gloymoneymanagement/data/repository/auth_repository.dart';
-import 'package:gloymoneymanagement/presentation/auth/bloc/login/login_bloc.dart';
-import 'package:gloymoneymanagement/presentation/auth/bloc/register/register_bloc.dart';
-import 'package:gloymoneymanagement/presentation/splash/pages/splash_screen.dart';
+import 'package:gloymoneymanagement/presentation/user/auth/bloc/login/login_bloc.dart';
+import 'package:gloymoneymanagement/presentation/user/auth/bloc/register/register_bloc.dart';
+import 'package:gloymoneymanagement/presentation/user/splash/pages/splash_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
 import 'package:intl/date_symbol_data_local.dart';
