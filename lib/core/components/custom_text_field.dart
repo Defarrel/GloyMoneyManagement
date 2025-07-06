@@ -6,6 +6,7 @@ class CustomTextField extends StatelessWidget {
   final String validator;
   final TextEditingController controller;
   final String label;
+  final TextStyle? labelStyle;
   final Function(String value)? onChanged;
   final bool obscureText;
   final TextInputType? keyboardType;
@@ -19,6 +20,7 @@ class CustomTextField extends StatelessWidget {
     super.key,
     required this.controller,
     required this.label,
+    this.labelStyle,
     this.onChanged,
     this.obscureText = false,
     this.keyboardType,
@@ -38,7 +40,7 @@ class CustomTextField extends StatelessWidget {
         if (showLabel) ...[
           Text(
             label,
-            style: AppStyles.subtitle.copyWith(color: const Color.fromARGB(255, 255, 255, 255)),
+            style: labelStyle ?? AppStyles.small.copyWith(color: const Color.fromARGB(255, 255, 255, 255)),
           ),
           const SizedBox(height: 8.0),
         ],

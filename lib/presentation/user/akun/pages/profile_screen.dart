@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gloymoneymanagement/presentation/user/akun/pages/camera_page.dart';
+import 'package:gloymoneymanagement/presentation/user/akun/pages/pengaturan_profile.dart';
 import 'package:gloymoneymanagement/services/storage_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
@@ -163,7 +164,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ListTile(
                   leading: const Icon(Icons.settings),
                   title: const Text('Pengaturan'),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const PengaturanProfile()),
+                    );
+                  },
                 ),
                 const Divider(height: 0),
                 ListTile(
