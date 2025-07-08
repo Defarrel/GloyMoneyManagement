@@ -84,7 +84,6 @@ class _PengaturanProfileState extends State<PengaturanProfile> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
       appBar: CustomAppBar(title: "Pengaturan Profil", showLogo: false),
       backgroundColor: const Color(0xFFF4F6F8),

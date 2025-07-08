@@ -4,6 +4,7 @@ import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/response/menabung/menabung_reponse_model.dart';
 import 'package:gloymoneymanagement/data/repository/menabung_repository.dart';
 import 'package:gloymoneymanagement/presentation/user/menabung/pages/detail_saving.dart';
+import 'package:gloymoneymanagement/presentation/user/menabung/pages/tambah_saving.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
 
 class SavingScreen extends StatefulWidget {
@@ -168,7 +169,17 @@ class _SavingScreenState extends State<SavingScreen> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // TODO: buka halaman tambah tabungan
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const TambahSavingPage()),
+          ).then((isSaved) {
+            if (isSaved == true) {
+              _loadSavings(); 
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Tabungan berhasil ditambahkan")),
+              );
+            }
+          });
         },
         backgroundColor: AppColors.primary800,
         label: const Text(

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dartz/dartz.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gloymoneymanagement/data/models/request/menabung/join_menabung_request_model.dart';
 import 'package:gloymoneymanagement/data/models/request/menabung/menabung_request_model.dart';
 import 'package:gloymoneymanagement/data/models/response/menabung/join_menabung_response_model.dart';
@@ -11,6 +12,7 @@ import 'package:http/http.dart' as http;
 
 class SavingRepository {
   final ServiceHttpClient _serviceHttpClient;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   SavingRepository(this._serviceHttpClient);
 
@@ -45,19 +47,21 @@ class SavingRepository {
   }
 
   /// POST create new saving
-  Future<Either<String, String>> createSaving(
-    SavingRequestModel request,
-  ) async {
+  Future<Either<String, String>> createSaving(SavingRequestModel model) async {
     try {
-      final http.Response res = await _serviceHttpClient.postWithToken(
-        'savings',
-        request.toMap(),
+      final response = await _serviceHttpClient.postWithToken(
+        "savings",
+        model.toMap(),
       );
-      final data = json.decode(res.body);
-      return Right(data['message']);
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return Right(data['message'] ?? "Tabungan berhasil dibuat");
+      } else {
+        return Left(data['message'] ?? "Gagal menambahkan tabungan");
+      }
     } catch (e) {
-      log("createSaving error: $e");
-      return const Left("Gagal membuat tabungan");
+      return Left("Terjadi kesalahan: $e");
     }
   }
 

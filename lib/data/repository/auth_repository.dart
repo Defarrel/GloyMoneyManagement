@@ -34,6 +34,10 @@ class AuthRepository {
           value: authResponse.token ?? '',
         );
         await _secureStorage.write(
+          key: "userId",
+          value: authResponse.user?.id.toString() ?? '',
+        );
+        await _secureStorage.write(
           key: "userRole",
           value: authResponse.user?.role ?? '',
         );
