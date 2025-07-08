@@ -71,7 +71,7 @@ class SavingRepository {
     JointSavingRequestModel request,
   ) async {
     try {
-      final http.Response res = await _serviceHttpClient.put(
+      final http.Response res = await _serviceHttpClient.postWithToken(
         'savings/$savingId/contribute',
         request.toMap(),
       );
@@ -80,6 +80,24 @@ class SavingRepository {
     } catch (e) {
       log("contributeToSaving error: $e");
       return const Left("Gagal menabung ke tabungan bersama");
+    }
+  }
+
+  /// POST withdraw from joint saving
+  Future<Either<String, String>> withdrawFromSaving(
+    int savingId,
+    JointSavingRequestModel request,
+  ) async {
+    try {
+      final http.Response res = await _serviceHttpClient.postWithToken(
+        'savings/$savingId/withdraw',
+        request.toMap(),
+      );
+      final data = json.decode(res.body);
+      return Right(data['message']);
+    } catch (e) {
+      log("withdrawFromSaving error: $e");
+      return const Left("Gagal menarik dana dari tabungan bersama");
     }
   }
 

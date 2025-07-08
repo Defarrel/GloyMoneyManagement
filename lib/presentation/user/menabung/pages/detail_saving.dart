@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/response/menabung/menabung_reponse_model.dart';
+import 'package:gloymoneymanagement/presentation/user/menabung/pages/top_up_saving.dart';
+import 'package:gloymoneymanagement/presentation/user/menabung/pages/withdraw_saving.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class DetailSaving extends StatelessWidget {
@@ -44,7 +46,7 @@ class DetailSaving extends StatelessWidget {
             Row(
               children: [
                 const CircleAvatar(
-                  backgroundColor: Colors.white,
+                  backgroundColor: AppColors.primary100,
                   child: Icon(Icons.group, color: AppColors.primary800),
                 ),
                 const SizedBox(width: 12),
@@ -111,9 +113,33 @@ class DetailSaving extends StatelessWidget {
             _infoRow("Deadline", _formatDate(saving.deadline)),
 
             const SizedBox(height: 24),
-            const Text(
-              "Anggota Tabungan",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+
+            // Anggota Tabungan + Undang
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Anggota Tabungan",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                OutlinedButton(
+                  onPressed: () {},
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: AppColors.primary800),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 6,
+                    ),
+                  ),
+                  child: Text(
+                    "Undang",
+                    style: TextStyle(color: AppColors.primary800),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             ...saving.members.map(
@@ -128,48 +154,55 @@ class DetailSaving extends StatelessWidget {
             ),
 
             const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary800,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                minimumSize: const Size.fromHeight(45),
+
+            // Action Box
+            Container(
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 164, 164, 164),
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: const Text(
-                "Top Up",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueGrey,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                minimumSize: const Size.fromHeight(45),
-              ),
-              child: const Text(
-                "Invite Teman",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black87,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                minimumSize: const Size.fromHeight(45),
-              ),
-              child: const Text(
-                "Lihat Riwayat",
-                style: TextStyle(color: Colors.white),
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _menuButton(
+                    icon: Icons.add_circle_outline,
+                    label: "Menabung",
+                    color: AppColors.primary,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => TopUpSaving(
+                            savingId: saving.id,
+                            userId: saving.userId,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  _menuButton(
+                    icon: Icons.outbox_rounded,
+                    label: "Tarik",
+                    color: AppColors.primary,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => WithdrawSaving(
+                            savingId: saving.id,
+                            userId: saving.userId,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  _menuButton(
+                    icon: Icons.history,
+                    label: "Riwayat",
+                    color: AppColors.primary,
+                    onTap: () {},
+                  ),
+                ],
               ),
             ),
           ],
@@ -202,6 +235,33 @@ class DetailSaving extends StatelessWidget {
                 color: Colors.black,
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _menuButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    Color iconColor = Colors.white,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            child: Icon(icon, color: iconColor, size: 26),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 13, color: Colors.white),
           ),
         ],
       ),
