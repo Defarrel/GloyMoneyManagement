@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/response/menabung/menabung_reponse_model.dart';
+import 'package:gloymoneymanagement/presentation/user/menabung/pages/riwayat_saving.dart';
 import 'package:gloymoneymanagement/presentation/user/menabung/pages/top_up_saving.dart';
 import 'package:gloymoneymanagement/presentation/user/menabung/pages/withdraw_saving.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
@@ -200,7 +201,13 @@ class DetailSaving extends StatelessWidget {
                     icon: Icons.history,
                     label: "Riwayat",
                     color: AppColors.primary,
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => RiwayatSaving(savingId: saving.id),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
