@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gloymoneymanagement/data/repository/auth_repository.dart';
 import 'package:gloymoneymanagement/presentation/user/auth/bloc/login/login_bloc.dart';
 import 'package:gloymoneymanagement/presentation/user/auth/bloc/register/register_bloc.dart';
+import 'package:gloymoneymanagement/presentation/user/pensiun/bloc/main_pensiun/mainpensiun_bloc.dart';
 import 'package:gloymoneymanagement/presentation/user/splash/pages/splash_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
@@ -29,6 +30,10 @@ class MyApp extends StatelessWidget {
           create: (_) =>
               RegisterBloc(authRepository: AuthRepository(ServiceHttpClient())),
         ),
+        BlocProvider(
+          create: (_) => MainpensiunBloc()..add(FetchMainPensiun()),
+        ),
+        
       ],
       child: MaterialApp(
         title: 'GMM App',

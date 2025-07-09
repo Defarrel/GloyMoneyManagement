@@ -1,10 +1,10 @@
 part of 'pensiunscreen_bloc.dart';
 
-abstract class PensiunscreenEvent extends Equatable {
-  const PensiunscreenEvent();
+abstract class PensiunScreenEvent extends Equatable {
+  const PensiunScreenEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
-class LoadPensionData extends PensiunscreenEvent {}
+class FetchPensionData extends PensiunScreenEvent {}

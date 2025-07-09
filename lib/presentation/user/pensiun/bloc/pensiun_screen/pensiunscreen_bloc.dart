@@ -7,17 +7,22 @@ import 'package:gloymoneymanagement/services/service_http_client.dart';
 part 'pensiunscreen_event.dart';
 part 'pensiunscreen_state.dart';
 
-class PensiunscreenBloc extends Bloc<PensiunscreenEvent, PensiunscreenState> {
+class PensiunScreenBloc extends Bloc<PensiunScreenEvent, PensiunScreenState> {
   final PensionRepository _repo = PensionRepository(ServiceHttpClient());
 
-  PensiunscreenBloc() : super(PensiunscreenInitial()) {
-    on<LoadPensionData>((event, emit) async {
-      emit(PensiunscreenLoading());
-      final result = await _repo.getPension();
-      result.fold(
-        (error) => emit(PensiunscreenError(error)),
-        (data) => emit(PensiunscreenLoaded(data)),
-      );
-    });
+  PensiunScreenBloc() : super(PensiunScreenInitial()) {
+    on<FetchPensionData>(_onFetchPensionData);
+  }
+
+  Future<void> _onFetchPensionData(
+    FetchPensionData event,
+    Emitter<PensiunScreenState> emit,
+  ) async {
+    emit(PensiunScreenLoading());
+    final result = await _repo.getPension();
+    result.fold(
+      (error) => emit(PensiunScreenError(error)),
+      (data) => emit(PensiunScreenLoaded(data)),
+    );
   }
 }

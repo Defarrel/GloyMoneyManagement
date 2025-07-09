@@ -1,29 +1,29 @@
 part of 'pensiunscreen_bloc.dart';
 
-abstract class PensiunscreenState extends Equatable {
-  const PensiunscreenState();
+abstract class PensiunScreenState extends Equatable {
+  const PensiunScreenState();
 
   @override
   List<Object?> get props => [];
 }
 
-class PensiunscreenInitial extends PensiunscreenState {}
+class PensiunScreenInitial extends PensiunScreenState {}
 
-class PensiunscreenLoading extends PensiunscreenState {}
+class PensiunScreenLoading extends PensiunScreenState {}
 
-class PensiunscreenLoaded extends PensiunscreenState {
-  final PensionResponseModel data;
+class PensiunScreenLoaded extends PensiunScreenState {
+  final PensionResponseModel pension;
 
-  const PensiunscreenLoaded(this.data);
+  const PensiunScreenLoaded(this.pension);
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [pension];
 }
 
-class PensiunscreenError extends PensiunscreenState {
+class PensiunScreenError extends PensiunScreenState {
   final String message;
 
-  const PensiunscreenError(this.message);
+  const PensiunScreenError(this.message);
 
   @override
   List<Object?> get props => [message];
