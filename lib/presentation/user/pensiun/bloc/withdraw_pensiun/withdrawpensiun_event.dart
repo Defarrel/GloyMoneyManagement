@@ -6,3 +6,12 @@ sealed class WithdrawpensiunEvent extends Equatable {
   @override
   List<Object> get props => [];
 }
+
+class SubmitWithdrawPensiun extends WithdrawpensiunEvent {
+  final int amount;
+
+  const SubmitWithdrawPensiun(this.amount);
+
+  @override
+  List<Object> get props => [amount];
+}

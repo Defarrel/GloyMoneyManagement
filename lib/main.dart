@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gloymoneymanagement/data/repository/auth_repository.dart';
+import 'package:gloymoneymanagement/data/repository/pensiun_repository.dart';
 import 'package:gloymoneymanagement/presentation/user/auth/bloc/login/login_bloc.dart';
 import 'package:gloymoneymanagement/presentation/user/auth/bloc/register/register_bloc.dart';
 import 'package:gloymoneymanagement/presentation/user/pensiun/bloc/main_pensiun/mainpensiun_bloc.dart';
+import 'package:gloymoneymanagement/presentation/user/pensiun/bloc/tambah_pensiun/tambahpensiun_bloc.dart';
+import 'package:gloymoneymanagement/presentation/user/pensiun/bloc/topup_pensiun/topuppensiun_bloc.dart';
+import 'package:gloymoneymanagement/presentation/user/pensiun/bloc/withdraw_pensiun/withdrawpensiun_bloc.dart';
 import 'package:gloymoneymanagement/presentation/user/splash/pages/splash_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
@@ -22,6 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        //Auth
         BlocProvider(
           create: (_) =>
               LoginBloc(authRepository: AuthRepository(ServiceHttpClient())),
@@ -30,10 +35,15 @@ class MyApp extends StatelessWidget {
           create: (_) =>
               RegisterBloc(authRepository: AuthRepository(ServiceHttpClient())),
         ),
+
+        //Pensiun
+        BlocProvider(create: (_) => MainpensiunBloc()..add(FetchMainPensiun())),
+        BlocProvider(create: (_) => TopupPensiunBloc()),
+        BlocProvider(create: (_) => WithdrawpensiunBloc()),
         BlocProvider(
-          create: (_) => MainpensiunBloc()..add(FetchMainPensiun()),
+          create: (_) =>
+              TambahpensiunBloc(PensionRepository(ServiceHttpClient())),
         ),
-        
       ],
       child: MaterialApp(
         title: 'GMM App',
