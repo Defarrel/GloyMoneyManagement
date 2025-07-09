@@ -33,7 +33,7 @@ class JointSavingResponseModel {
         userId: int.tryParse(map['user_id'].toString()) ?? 0,
         amount: double.tryParse(map['amount'].toString())?.round() ?? 0,
         contributorName: map['contributor_name'] ?? '',
-        createdAt: map['created_at'] ?? '',
+        createdAt: map['date'] ?? map['created_at'] ?? '',
         savingTitle: map['saving_title'],
         userName: map['user_name'],
       );

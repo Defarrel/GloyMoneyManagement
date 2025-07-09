@@ -66,16 +66,30 @@ class _SavingScreenState extends State<SavingScreen> {
                 children: [
                   for (final saving in _savings)
                     GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => DetailSaving(
-                              saving: saving,
-                              onRefresh: _loadSavings,
-                            ),
-                          ),
-                        ).then((_) => _loadSavings());
+                      onTap: () async {
+                        final result = await _repo.getSavingDetail(
+                          saving.id,
+                        ); 
+                        result.fold(
+                          (error) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Gagal memuat detail: $error'),
+                              ),
+                            );
+                          },
+                          (savingDetail) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => DetailSaving(
+                                  saving: savingDetail,
+                                  onRefresh: _loadSavings,
+                                ),
+                              ),
+                            );
+                          },
+                        );
                       },
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 16),
@@ -174,7 +188,7 @@ class _SavingScreenState extends State<SavingScreen> {
             MaterialPageRoute(builder: (_) => const TambahSavingPage()),
           ).then((isSaved) {
             if (isSaved == true) {
-              _loadSavings(); 
+              _loadSavings();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text("Tabungan berhasil ditambahkan")),
               );
