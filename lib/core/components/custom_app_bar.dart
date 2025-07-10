@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gloymoneymanagement/presentation/user/notifikasi/notifikasi.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -18,7 +19,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.white,
       elevation: 0,
       centerTitle: false,
-      actions: actions,
       iconTheme: const IconThemeData(color: Colors.black),
       title: showLogo
           ? Row(
@@ -53,6 +53,18 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 letterSpacing: 1,
               ),
             ),
+      actions: [
+        ...?actions,
+        IconButton(
+          icon: const Icon(Icons.notifications_none),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => Notifikasi()),
+            );
+          },
+        ),
+      ],
     );
   }
 
