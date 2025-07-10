@@ -35,13 +35,39 @@ class AkunRepository {
     }
   }
 
+  /// Ambil semua user (untuk fitur undang teman)
+  Future<Either<String, List<AkunResponseModel>>> getAllUsers() async {
+    try {
+      final response = await _serviceHttpClient.get("users");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = json.decode(response.body);
+
+        final users = jsonList
+            .map((userJson) => AkunResponseModel.fromMap(userJson))
+            .toList();
+
+        log("Fetched ${users.length} users.");
+        return Right(users);
+      } else {
+        final message = _parseMessage(response.body);
+        log("Failed to fetch users: $message");
+        return Left(message);
+      }
+    } catch (e) {
+      log("Exception during getAllUsers: $e");
+      return const Left("Terjadi kesalahan saat mengambil daftar pengguna.");
+    }
+  }
+
   /// Update data akun
   Future<Either<String, AkunResponseModel>> updateAkun(
-      int id, AkunRequestModel model) async {
+    int id,
+    AkunRequestModel model,
+  ) async {
     try {
       log("Updating user ID $id with data: ${model.toMap()}");
-      final response =
-          await _serviceHttpClient.put("users/$id", model.toMap());
+      final response = await _serviceHttpClient.put("users/$id", model.toMap());
 
       if (response.statusCode == 200) {
         final data = AkunResponseModel.fromJson(response.body);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/response/menabung/menabung_reponse_model.dart';
+import 'package:gloymoneymanagement/presentation/user/menabung/pages/invt_saving.dart';
 import 'package:gloymoneymanagement/presentation/user/menabung/pages/riwayat_saving.dart';
 import 'package:gloymoneymanagement/presentation/user/menabung/pages/top_up_saving.dart';
 import 'package:gloymoneymanagement/presentation/user/menabung/pages/withdraw_saving.dart';
@@ -124,7 +125,16 @@ class DetailSaving extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => InvtSaving(
+                          savingId: saving.id,
+                        ), 
+                      ),
+                    );
+                  },
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: AppColors.primary800),
                     shape: RoundedRectangleBorder(
