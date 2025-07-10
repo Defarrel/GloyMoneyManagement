@@ -23,6 +23,7 @@ class _NotifikasiState extends State<Notifikasi> {
   }
 
   Future<void> _loadNotifications() async {
+    setState(() => _isLoading = true);
     final result = await _invitationRepo.getUserInvitations();
     result.fold(
       (err) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err))),
@@ -30,6 +31,20 @@ class _NotifikasiState extends State<Notifikasi> {
         _notifications = data;
         _isLoading = false;
       }),
+    );
+  }
+
+  Future<void> _respondToInvitation(int id, String status) async {
+    final result = await _invitationRepo.respondToInvitation(
+      invitationId: id,
+      status: status,
+    );
+    result.fold(
+      (err) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err))),
+      (msg) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        _loadNotifications();
+      },
     );
   }
 
@@ -62,19 +77,42 @@ class _NotifikasiState extends State<Notifikasi> {
                   itemBuilder: (context, index) {
                     final notif = _notifications[index];
                     return ListTile(
-                      leading: const Icon(Icons.notifications, color: AppColors.primary800),
-                      title: Text("Undangan dari ${notif.senderName}"),
-                      subtitle: Text("Tabungan: ${notif.savingTitle}"),
-                      trailing: Text(
-                        notif.status,
-                        style: TextStyle(
-                          color: notif.status == "accepted"
-                              ? Colors.green
-                              : notif.status == "rejected"
-                                  ? Colors.red
-                                  : Colors.orange,
-                        ),
+                      leading: const CircleAvatar(
+                        backgroundColor: AppColors.primary200,
+                        child: Icon(Icons.person, color: AppColors.primary800),
                       ),
+                      title: Text("Undangan dari ${notif.senderName}"),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Tabungan: ${notif.savingTitle}"),
+                          Text("Status: ${notif.status}"),
+                        ],
+                      ),
+                      isThreeLine: true,
+                      trailing: notif.status == "pending"
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.check_circle, color: Colors.green),
+                                  onPressed: () => _respondToInvitation(notif.id, "accepted"),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.cancel, color: Colors.red),
+                                  onPressed: () => _respondToInvitation(notif.id, "rejected"),
+                                ),
+                              ],
+                            )
+                          : Text(
+                              notif.status.toUpperCase(),
+                              style: TextStyle(
+                                color: notif.status == "accepted"
+                                    ? Colors.green
+                                    : Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     );
                   },
                 ),

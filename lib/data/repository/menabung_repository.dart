@@ -19,17 +19,24 @@ class SavingRepository {
   /// GET all savings
   Future<Either<String, List<SavingResponseModel>>> getAllSavings() async {
     try {
-      final http.Response res = await _serviceHttpClient.get('savings');
-      final List<dynamic> jsonList = json.decode(res.body);
+      final userId = await _secureStorage.read(key: "userId");
+      if (userId == null) return Left("User ID tidak ditemukan");
 
-      final savings = jsonList
-          .map((e) => SavingResponseModel.fromMap(e))
-          .toList();
+      final response = await _serviceHttpClient.get("savings/user/$userId");
 
-      return Right(savings);
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = jsonDecode(response.body);
+        final data = jsonList
+            .map((json) => SavingResponseModel.fromMap(json))
+            .toList();
+        return Right(data);
+      } else {
+        final error = jsonDecode(response.body);
+        return Left(error['message'] ?? 'Gagal memuat tabungan');
+      }
     } catch (e) {
-      log("getAllSavings error: $e");
-      return const Left("Gagal memuat data tabungan");
+      log("Error getAllSavings: $e");
+      return Left("Terjadi kesalahan saat mengambil tabungan");
     }
   }
 
