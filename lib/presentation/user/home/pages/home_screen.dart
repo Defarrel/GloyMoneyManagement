@@ -11,6 +11,7 @@ import 'package:gloymoneymanagement/presentation/user/home/pages/home_root.dart'
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/riwayat_transaksi.dart';
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/tambah_transaksi.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -40,18 +41,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadAll() async {
     setState(() => _isLoading = true);
-    await Future.wait([_loadTransactions(), _loadPension(), _loadSavings()]);
+    await Future.wait([
+      _loadTransactions(),
+      _loadPension(),
+      _loadSavings(),
+    ]);
     setState(() => _isLoading = false);
   }
 
   Future<void> _loadTransactions() async {
     final result = await _transactionRepo.getTransactions();
     result.fold((error) => _showError(error), (data) {
-      final pemasukan = data
-          .where((t) => t.type.toLowerCase() == 'pemasukan')
+      final pemasukan = data.where((t) => t.type.toLowerCase() == 'pemasukan')
           .fold<int>(0, (sum, t) => sum + t.amount.toInt());
-      final pengeluaran = data
-          .where((t) => t.type.toLowerCase() == 'pengeluaran')
+      final pengeluaran = data.where((t) => t.type.toLowerCase() == 'pengeluaran')
           .fold<int>(0, (sum, t) => sum + t.amount.toInt());
 
       _transactions = data;
@@ -72,10 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showError(String error) {
-    if (error == 'Dana pensiun belum dibuat') {
-      return;
-    }
-
+    if (error == 'Dana pensiun belum dibuat') return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
   }
 
@@ -83,6 +83,68 @@ class _HomeScreenState extends State<HomeScreen> {
     final s = value.toString();
     final reg = RegExp(r'\B(?=(\d{3})+(?!\d))');
     return s.replaceAllMapped(reg, (m) => '.');
+  }
+
+  Widget _buildGrafik() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Grafik Keuangan",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 160,
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  maxY: (_pemasukan > _pengeluaran ? _pemasukan : _pengeluaran).toDouble() + 1000,
+                  barTouchData: BarTouchData(enabled: false),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          switch (value.toInt()) {
+                            case 0:
+                              return const Text("Pemasukan", style: TextStyle(fontSize: 12));
+                            case 1:
+                              return const Text("Pengeluaran", style: TextStyle(fontSize: 12));
+                            default:
+                              return const SizedBox.shrink();
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  barGroups: [
+                    BarChartGroupData(x: 0, barRods: [
+                      BarChartRodData(toY: _pemasukan.toDouble(), color: Colors.green, width: 22),
+                    ]),
+                    BarChartGroupData(x: 1, barRods: [
+                      BarChartRodData(toY: _pengeluaran.toDouble(), color: Colors.red, width: 22),
+                    ]),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -102,6 +164,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildSaldoHeader(theme),
+                    const SizedBox(height: 12),
+                    _buildGrafik(),
                     const SizedBox(height: 12),
                     _buildMenuNavigasi(),
                     const SizedBox(height: 12),
