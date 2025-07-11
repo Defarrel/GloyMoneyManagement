@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
-import 'package:gloymoneymanagement/presentation/user/pensiun/bloc/main_pensiun/mainpensiun_bloc.dart';
+import 'package:gloymoneymanagement/data/models/response/pensiun/pensiun_response_model.dart';
+import 'package:gloymoneymanagement/data/repository/pensiun_repository.dart';
 import 'package:gloymoneymanagement/presentation/user/pensiun/pages/main_pensiun.dart';
 import 'package:gloymoneymanagement/presentation/user/pensiun/pages/tambah_pensiun.dart';
+import 'package:gloymoneymanagement/services/service_http_client.dart';
 
 class PensiunScreen extends StatefulWidget {
   const PensiunScreen({super.key});
@@ -14,43 +15,42 @@ class PensiunScreen extends StatefulWidget {
 }
 
 class _PensiunScreenState extends State<PensiunScreen> {
-  late MainpensiunBloc _bloc;
+  final _repo = PensionRepository(ServiceHttpClient());
+  bool _isLoading = true;
+  PensionResponseModel? _pension;
 
   @override
   void initState() {
     super.initState();
-    _bloc = MainpensiunBloc()..add(FetchMainPensiun());
+    _fetchPensionData();
   }
 
-  @override
-  void dispose() {
-    _bloc.close();
-    super.dispose();
+  Future<void> _fetchPensionData() async {
+    setState(() => _isLoading = true);
+    final result = await _repo.getPension();
+    result.fold(
+      (err) {
+        setState(() => _isLoading = false);
+      },
+      (data) {
+        setState(() {
+          _pension = data;
+          _isLoading = false;
+        });
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
-      appBar: CustomAppBar(
-        title: "Dana Pensiun",
-        showLogo: true,
-      ),
-      body: BlocProvider.value(
-        value: _bloc,
-        child: BlocBuilder<MainpensiunBloc, MainpensiunState>(
-          builder: (context, state) {
-            if (state is MainpensiunLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is MainpensiunLoaded) {
-              return const MainPensiun();
-            } else if (state is MainpensiunError) {
-              return Center(child: Text("Error: ${state.message}"));
-            }
-            return _buildEmptyView();
-          },
-        ),
-      ),
+      appBar: CustomAppBar(title: "Dana Pensiun", showLogo: true),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _pension == null
+          ? _buildEmptyView()
+          : MainPensiun(pension: _pension!, onRefresh: _fetchPensionData),
     );
   }
 
@@ -79,7 +79,7 @@ class _PensiunScreenState extends State<PensiunScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const TambahPensiun()),
-                ).then((_) => _bloc.add(FetchMainPensiun()));
+                ).then((_) => _fetchPensionData());
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary800,

@@ -22,7 +22,7 @@ class MainpensiunBloc extends Bloc<MainpensiunEvent, MainpensiunState> {
     final result = await _repo.getPension();
     result.fold(
       (error) => emit(MainpensiunError(error)),
-      (data) => emit(MainpensiunLoaded(data)),
+      (data) => emit(MainpensiunLoaded(data)), 
     );
   }
 }

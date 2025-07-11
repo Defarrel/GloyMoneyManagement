@@ -12,7 +12,7 @@ class MainpensiunInitial extends MainpensiunState {}
 class MainpensiunLoading extends MainpensiunState {}
 
 class MainpensiunLoaded extends MainpensiunState {
-  final PensionResponseModel pension;
+  final PensionResponseModel? pension; 
 
   const MainpensiunLoaded(this.pension);
 

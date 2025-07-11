@@ -40,50 +40,43 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadAll() async {
     setState(() => _isLoading = true);
-    await Future.wait([
-      _loadTransactions(),
-      _loadPension(),
-      _loadSavings(),
-    ]);
+    await Future.wait([_loadTransactions(), _loadPension(), _loadSavings()]);
     setState(() => _isLoading = false);
   }
 
   Future<void> _loadTransactions() async {
     final result = await _transactionRepo.getTransactions();
-    result.fold(
-      (error) => _showError(error),
-      (data) {
-        final pemasukan = data.where((t) => t.type.toLowerCase() == 'pemasukan')
-            .fold<int>(0, (sum, t) => sum + t.amount.toInt());
-        final pengeluaran = data.where((t) => t.type.toLowerCase() == 'pengeluaran')
-            .fold<int>(0, (sum, t) => sum + t.amount.toInt());
+    result.fold((error) => _showError(error), (data) {
+      final pemasukan = data
+          .where((t) => t.type.toLowerCase() == 'pemasukan')
+          .fold<int>(0, (sum, t) => sum + t.amount.toInt());
+      final pengeluaran = data
+          .where((t) => t.type.toLowerCase() == 'pengeluaran')
+          .fold<int>(0, (sum, t) => sum + t.amount.toInt());
 
-        _transactions = data;
-        _pemasukan = pemasukan;
-        _pengeluaran = pengeluaran;
-        _saldo = pemasukan - pengeluaran;
-      },
-    );
+      _transactions = data;
+      _pemasukan = pemasukan;
+      _pengeluaran = pengeluaran;
+      _saldo = pemasukan - pengeluaran;
+    });
   }
 
   Future<void> _loadPension() async {
     final result = await _pensionRepo.getPension();
-    result.fold(
-      (error) => _showError(error),
-      (data) => _pension = data,
-    );
+    result.fold((error) => _showError(error), (data) => _pension = data);
   }
 
   Future<void> _loadSavings() async {
     final result = await _savingRepo.getAllSavings();
-    result.fold(
-      (error) => _showError(error),
-      (data) => _savings = data,
-    );
+    result.fold((error) => _showError(error), (data) => _savings = data);
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  void _showError(String error) {
+    if (error == 'Dana pensiun belum dibuat') {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
   }
 
   String _formatRupiah(int value) {
@@ -135,18 +128,27 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           const Text("Saldo Anda", style: TextStyle(color: Colors.black54)),
           const SizedBox(height: 4),
-          Text("Rp ${_formatRupiah(_saldo)}",
-              style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            "Rp ${_formatRupiah(_saldo)}",
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
-                child: Text("Pengeluaran\nRp ${_formatRupiah(_pengeluaran)}",
-                    style: const TextStyle(color: Colors.red)),
+                child: Text(
+                  "Pengeluaran\nRp ${_formatRupiah(_pengeluaran)}",
+                  style: const TextStyle(color: Colors.red),
+                ),
               ),
               Expanded(
-                child: Text("Pemasukan\nRp ${_formatRupiah(_pemasukan)}",
-                    style: const TextStyle(color: Colors.green), textAlign: TextAlign.right),
+                child: Text(
+                  "Pemasukan\nRp ${_formatRupiah(_pemasukan)}",
+                  style: const TextStyle(color: Colors.green),
+                  textAlign: TextAlign.right,
+                ),
               ),
             ],
           ),
@@ -163,11 +165,22 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _homeMenuItem(Icons.receipt, "Transaksi", () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const RiwayatTransaksi())).then((_) => _loadAll());
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const RiwayatTransaksi()),
+            ).then((_) => _loadAll());
           }),
           _homeMenuItem(Icons.bar_chart, "Portofolio", () {}),
-          _homeMenuItem(Icons.savings, "Menabung", () => HomeRoot.navigateToTab(context, 1)),
-          _homeMenuItem(Icons.timelapse, "Pensiun", () => HomeRoot.navigateToTab(context, 2)),
+          _homeMenuItem(
+            Icons.savings,
+            "Menabung",
+            () => HomeRoot.navigateToTab(context, 1),
+          ),
+          _homeMenuItem(
+            Icons.timelapse,
+            "Pensiun",
+            () => HomeRoot.navigateToTab(context, 2),
+          ),
         ],
       ),
     );
@@ -198,14 +211,22 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ElevatedButton(
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const TambahTransaksi())).then((_) => _loadAll());
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const TambahTransaksi()),
+          ).then((_) => _loadAll());
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary800,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           minimumSize: const Size.fromHeight(40),
         ),
-        child: const Text("Transaksi Baru", style: TextStyle(color: Colors.white)),
+        child: const Text(
+          "Transaksi Baru",
+          style: TextStyle(color: Colors.white),
+        ),
       ),
     );
   }
@@ -218,13 +239,20 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.15), blurRadius: 10, offset: const Offset(0, 5)),
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Rencana Pensiun", style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            "Rencana Pensiun",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -232,10 +260,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Total Investasi", style: TextStyle(fontSize: 12)),
+                    const Text(
+                      "Total Investasi",
+                      style: TextStyle(fontSize: 12),
+                    ),
                     const SizedBox(height: 4),
-                    Text("Rp ${_formatRupiah(_pension!.currentAmount)}",
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      "Rp ${_formatRupiah(_pension!.currentAmount)}",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
               ),
@@ -245,8 +278,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     const Text("Target", style: TextStyle(fontSize: 12)),
                     const SizedBox(height: 4),
-                    Text("Rp ${_formatRupiah(_pension!.targetAmount)}",
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                    Text(
+                      "Rp ${_formatRupiah(_pension!.targetAmount)}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -257,7 +295,9 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => HomeRoot.navigateToTab(context, 2),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary800,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
               minimumSize: const Size.fromHeight(40),
             ),
             child: const Text("Top Up", style: TextStyle(color: Colors.white)),
@@ -270,8 +310,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildJudulSection(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.black87,
+        ),
+      ),
     );
   }
 
@@ -283,13 +329,20 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.15), blurRadius: 10, offset: const Offset(0, 5)),
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(saving.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            saving.title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -299,8 +352,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     const Text("Terkumpul", style: TextStyle(fontSize: 12)),
                     const SizedBox(height: 4),
-                    Text("Rp ${_formatRupiah(saving.currentAmount)}",
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      "Rp ${_formatRupiah(saving.currentAmount)}",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
               ),
@@ -310,8 +365,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     const Text("Target", style: TextStyle(fontSize: 12)),
                     const SizedBox(height: 4),
-                    Text("Rp ${_formatRupiah(saving.targetAmount)}",
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                    Text(
+                      "Rp ${_formatRupiah(saving.targetAmount)}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
                   ],
                 ),
               ),
