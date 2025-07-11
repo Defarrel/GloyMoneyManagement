@@ -60,6 +60,24 @@ class AkunRepository {
     }
   }
 
+  Future<Either<String, AkunResponseModel>> getCurrentUser() async {
+    try {
+      final response = await _serviceHttpClient.get(
+        'me',
+      ); 
+
+      if (response.statusCode == 200) {
+        return Right(AkunResponseModel.fromJson(response.body));
+      } else {
+        final message = _parseMessage(response.body);
+        return Left(message);
+      }
+    } catch (e) {
+      log("Exception in getCurrentUser: $e");
+      return Left('Gagal memuat data');
+    }
+  }
+
   /// Update data akun
   Future<Either<String, AkunResponseModel>> updateAkun(
     int id,
