@@ -23,7 +23,10 @@ class _RiwayatSavingState extends State<RiwayatSaving> {
     super.initState();
     _future = _repo
         .getContributions(widget.savingId)
-        .then((result) => result.fold((err) => throw Exception(err), (data) => data));
+        .then(
+          (result) =>
+              result.fold((err) => throw Exception(err), (data) => data),
+        );
   }
 
   @override
@@ -70,7 +73,9 @@ class _RiwayatSavingState extends State<RiwayatSaving> {
 
     final contributorName = (item.userName?.isNotEmpty == true)
         ? item.userName!
-        : (item.contributorName?.isNotEmpty == true ? item.contributorName! : "-");
+        : (item.contributorName?.isNotEmpty == true
+              ? item.contributorName!
+              : "-");
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -89,17 +94,15 @@ class _RiwayatSavingState extends State<RiwayatSaving> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            item.savingTitle ?? "Tabungan Bersama",
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-          ),
-          const SizedBox(height: 6),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 contributorName,
-                style: const TextStyle(fontSize: 14),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
               ),
               Text(
                 nominal,
