@@ -1,6 +1,8 @@
 // home_root.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gloymoneymanagement/core/components/custom_bottom_nav_bar.dart';
+import 'package:gloymoneymanagement/presentation/user/home/bloc/homeScreen/home_screen_bloc.dart';
 import 'package:gloymoneymanagement/presentation/user/home/pages/home_screen.dart';
 import 'package:gloymoneymanagement/presentation/user/menabung/pages/saving_screen.dart';
 import 'package:gloymoneymanagement/presentation/user/pensiun/pages/pensiun_screen.dart';
@@ -21,8 +23,11 @@ class HomeRoot extends StatefulWidget {
 class _HomeRootState extends State<HomeRoot> with TickerProviderStateMixin {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
+  final List<Widget> _screens = [
+    BlocProvider(
+      create: (_) => HomeScreenBloc()..add(FetchHomeData()),
+      child: const HomeScreen(),
+    ),
     SavingScreen(),
     PensiunScreen(),
     ProfileScreen(),
@@ -44,7 +49,10 @@ class _HomeRootState extends State<HomeRoot> with TickerProviderStateMixin {
     );
 
     _fadeAnimations = _fadeControllers
-        .map((controller) => Tween<double>(begin: 0.0, end: 1.0).animate(controller))
+        .map(
+          (controller) =>
+              Tween<double>(begin: 0.0, end: 1.0).animate(controller),
+        )
         .toList();
 
     _fadeControllers[_currentIndex].forward();
