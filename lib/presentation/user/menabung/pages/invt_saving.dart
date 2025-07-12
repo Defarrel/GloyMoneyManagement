@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
-import 'package:gloymoneymanagement/data/models/request/invite/invt_request_model.dart';
 import 'package:gloymoneymanagement/data/models/response/akun/akun_response_model.dart';
 import 'package:gloymoneymanagement/data/repository/akun_repository.dart';
 import 'package:gloymoneymanagement/data/repository/invitation_repository.dart';
+import 'package:gloymoneymanagement/presentation/user/menabung/bloc/invtSaving/invt_saving_bloc.dart';
+import 'package:gloymoneymanagement/presentation/user/menabung/bloc/invtSaving/invt_saving_event.dart';
+import 'package:gloymoneymanagement/presentation/user/menabung/bloc/invtSaving/invt_saving_state.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
 
 class InvtSaving extends StatefulWidget {
@@ -17,43 +20,18 @@ class InvtSaving extends StatefulWidget {
 }
 
 class _InvtSavingState extends State<InvtSaving> {
-  final _userRepo = AkunRepository(ServiceHttpClient());
-  final _invtRepo = InvitationRepository(ServiceHttpClient());
-
-  List<AkunResponseModel> _users = [];
-  bool _isLoading = true;
-  int? _currentUserId;
+  late final InvtSavingBloc _bloc;
 
   @override
   void initState() {
     super.initState();
-    _initData();
+    _bloc = InvtSavingBloc(
+      akunRepository: AkunRepository(ServiceHttpClient()),
+      invitationRepository: InvitationRepository(ServiceHttpClient()),
+    )..add(LoadUsers());
   }
 
-  Future<void> _initData() async {
-    final userId = await _userRepo.getUserIdFromStorage();
-    setState(() {
-      _currentUserId = userId;
-    });
-    _loadUsers();
-  }
-
-  Future<void> _loadUsers() async {
-    final result = await _userRepo.getAllUsers();
-    result.fold(
-      (err) => ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(err))),
-      (data) => setState(() {
-        _users = data
-            .where((user) => user.id != _currentUserId)
-            .toList(); // tidak tampilkan diri sendiri
-        _isLoading = false;
-      }),
-    );
-  }
-
-  Future<void> _confirmInvite(AkunResponseModel user) async {
+  Future<void> _confirmInvite(AkunResponseModel user, int senderId) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -76,65 +54,79 @@ class _InvtSavingState extends State<InvtSaving> {
     );
 
     if (confirm == true) {
-      final result = await _invtRepo.sendInvitation(
-        InvtRequestModel(
-          savingId: widget.savingId,
-          receiverId: user.id!,
-          senderId: _currentUserId!, // ← sudah diperoleh dari secure storage
-        ),
-      );
-
-      result.fold(
-        (err) => ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(err))),
-        (msg) => ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(msg))),
-      );
+      _bloc.add(SendInvitation(
+        savingId: widget.savingId,
+        receiverId: user.id!,
+        senderId: senderId,
+      ));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
-      appBar: CustomAppBar(title: "Undang Teman", showLogo: true),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: _users.length,
-              separatorBuilder: (_, __) => const Divider(),
-              itemBuilder: (context, index) {
-                final user = _users[index];
-                return ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: AppColors.primary200,
-                    child: Icon(Icons.person, color: AppColors.primary800),
-                  ),
-                  title: Text(user.name ?? "-"),
-                  subtitle: Text(user.email ?? ""),
-                  trailing: OutlinedButton(
-                    onPressed: () => _confirmInvite(user),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.primary800),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
+    return BlocProvider.value(
+      value: _bloc,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF4F6F8),
+        appBar: CustomAppBar(title: "Undang Teman", showLogo: true),
+        body: BlocConsumer<InvtSavingBloc, InvtSavingState>(
+          listener: (context, state) {
+            if (state is InvtSavingError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
+            } else if (state is InvtSavingSuccessMessage) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is InvtSavingLoading || state is InvtSavingInitial) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is InvtSavingLoaded) {
+              final users = state.users;
+              return ListView.separated(
+                padding: const EdgeInsets.all(16),
+                itemCount: users.length,
+                separatorBuilder: (_, __) => const Divider(),
+                itemBuilder: (context, index) {
+                  final user = users[index];
+                  return ListTile(
+                    leading: const CircleAvatar(
+                      backgroundColor: AppColors.primary200,
+                      child: Icon(Icons.person, color: AppColors.primary800),
+                    ),
+                    title: Text(user.name ?? "-"),
+                    subtitle: Text(user.email ?? ""),
+                    trailing: OutlinedButton(
+                      onPressed: () => _confirmInvite(user, state.currentUserId),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.primary800),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 6,
+                      child: const Text(
+                        "Undang",
+                        style: TextStyle(color: AppColors.primary800),
                       ),
                     ),
-                    child: const Text(
-                      "Undang",
-                      style: TextStyle(color: AppColors.primary800),
-                    ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              );
+            } else if (state is InvtSavingError) {
+              return Center(child: Text("Error: ${state.message}"));
+            } else {
+              return const Center(child: Text("Tidak ada data"));
+            }
+          },
+        ),
+      ),
     );
   }
 }
