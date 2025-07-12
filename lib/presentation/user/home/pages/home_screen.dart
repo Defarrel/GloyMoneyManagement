@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
+import 'package:gloymoneymanagement/core/constants/colors.dart';
+import 'package:gloymoneymanagement/data/models/response/menabung/menabung_reponse_model.dart';
+import 'package:gloymoneymanagement/data/models/response/pensiun/pensiun_response_model.dart';
 import 'package:gloymoneymanagement/data/models/response/transaksi/transaction_response_model.dart';
+import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
 import 'package:gloymoneymanagement/presentation/user/home/bloc/homeScreen/home_screen_bloc.dart';
+import 'package:gloymoneymanagement/presentation/user/home/pages/home_root.dart';
+import 'package:gloymoneymanagement/presentation/user/saham/saham.dart';
+import 'package:gloymoneymanagement/presentation/user/transaksi/bloc/tambahTransaksi/tambah_transaksi_bloc.dart';
+import 'package:gloymoneymanagement/presentation/user/transaksi/pages/riwayat_transaksi.dart';
+import 'package:gloymoneymanagement/presentation/user/transaksi/pages/tambah_transaksi.dart';
+import 'package:gloymoneymanagement/services/service_http_client.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -32,6 +42,49 @@ class _HomeScreenState extends State<HomeScreen> {
     final s = value.toString();
     final reg = RegExp(r'\B(?=(\d{3})+(?!\d))');
     return s.replaceAllMapped(reg, (m) => '.');
+  }
+
+  Widget _buildSaldoHeader(
+    ThemeData theme,
+    int saldo,
+    int pemasukan,
+    int pengeluaran,
+  ) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Saldo Anda", style: TextStyle(color: Colors.black54)),
+          const SizedBox(height: 4),
+          Text(
+            "Rp ${_formatRupiah(saldo)}",
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  "Pengeluaran\nRp ${_formatRupiah(pengeluaran)}",
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  "Pemasukan\nRp ${_formatRupiah(pemasukan)}",
+                  style: const TextStyle(color: Colors.green),
+                  textAlign: TextAlign.right,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildGrafik(List<TransactionResponseModel> transactions) {
@@ -214,6 +267,249 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildMenuNavigasi() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _homeMenuItem(Icons.receipt, "Transaksi", () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const RiwayatTransaksi()),
+            );
+            if (result != null) {
+              context.read<HomeScreenBloc>().add(FetchHomeData());
+            }
+          }),
+          _homeMenuItem(Icons.bar_chart, "Saham", () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const Saham()),
+            );
+          }),
+          _homeMenuItem(
+            Icons.savings,
+            "Menabung",
+            () => HomeRoot.navigateToTab(context, 1),
+          ),
+          _homeMenuItem(
+            Icons.timelapse,
+            "Pensiun",
+            () => HomeRoot.navigateToTab(context, 2),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _homeMenuItem(IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: AppColors.primary),
+          ),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(fontSize: 13)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransaksiBaruButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ElevatedButton(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BlocProvider(
+                create: (_) => TambahTransaksiBloc(
+                  repository: TransactionRepository(ServiceHttpClient()),
+                ),
+                child: const TambahTransaksi(),
+              ),
+            ),
+          );
+          if (result != null) {
+            context.read<HomeScreenBloc>().add(FetchHomeData());
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary800,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          minimumSize: const Size.fromHeight(40),
+        ),
+        child: const Text(
+          "Transaksi Baru",
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKartuPensiun(PensionResponseModel pension) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Rencana Pensiun",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Total Investasi",
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Rp ${_formatRupiah(pension.currentAmount)}",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text("Target", style: TextStyle(fontSize: 12)),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Rp ${_formatRupiah(pension.targetAmount)}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: () => HomeRoot.navigateToTab(context, 2),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary800,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              minimumSize: const Size.fromHeight(40),
+            ),
+            child: const Text("Top Up", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildJudulSection(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.black87,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSavingItem(SavingResponseModel saving) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            saving.title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Terkumpul", style: TextStyle(fontSize: 12)),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Rp ${_formatRupiah(saving.currentAmount)}",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text("Target", style: TextStyle(fontSize: 12)),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Rp ${_formatRupiah(saving.targetAmount)}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -223,16 +519,12 @@ class _HomeScreenState extends State<HomeScreen> {
         if (state is HomeScreenLoading) {
           return const Scaffold(
             backgroundColor: Color(0xFFF4F6F8),
-            appBar: CustomAppBar(
-              title: "Gloy Money Management",
-              showLogo: true,
-            ),
-            body: Center(child: CircularProgressIndicator()),
+            body: CustomAppBar(title: "Gloy Money Management", showLogo: true),
           );
         } else if (state is HomeScreenError) {
           return Scaffold(
             backgroundColor: const Color(0xFFF4F6F8),
-            appBar: CustomAppBar(
+            appBar: const CustomAppBar(
               title: "Gloy Money Management",
               showLogo: true,
             ),
@@ -241,7 +533,7 @@ class _HomeScreenState extends State<HomeScreen> {
         } else if (state is HomeScreenLoaded) {
           return Scaffold(
             backgroundColor: const Color(0xFFF4F6F8),
-            appBar: CustomAppBar(
+            appBar: const CustomAppBar(
               title: "Gloy Money Management",
               showLogo: true,
             ),
@@ -254,10 +546,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Reuse original widget logic here, using state.pemasukan, etc.
-                    // Example:
-                    // _buildSaldoHeader(theme, state.saldo, state.pemasukan, state.pengeluaran),
-                    // _buildGrafik(state.transactions),
+                    _buildSaldoHeader(
+                      theme,
+                      state.saldo,
+                      state.pemasukan,
+                      state.pengeluaran,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildGrafik(state.transactions),
+                    const SizedBox(height: 12),
+                    _buildMenuNavigasi(),
+                    const SizedBox(height: 12),
+                    _buildTransaksiBaruButton(),
+                    const SizedBox(height: 12),
+                    if (state.pension != null) ...[
+                      _buildKartuPensiun(state.pension!),
+                      const SizedBox(height: 16),
+                    ],
+                    if (state.savings.isNotEmpty) ...[
+                      _buildJudulSection("Tabungan Bersama"),
+                      ...state.savings.map(
+                        (saving) => _buildSavingItem(saving),
+                      ),
+                    ],
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),
