@@ -1,8 +1,10 @@
 part of 'riwayat_transaksi_bloc.dart';
 
-sealed class RiwayatTransaksiEvent extends Equatable {
+abstract class RiwayatTransaksiEvent extends Equatable {
   const RiwayatTransaksiEvent();
 
   @override
   List<Object> get props => [];
 }
+
+class LoadRiwayatTransaksi extends RiwayatTransaksiEvent {}

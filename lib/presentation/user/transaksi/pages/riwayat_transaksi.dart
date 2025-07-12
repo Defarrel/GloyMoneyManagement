@@ -3,35 +3,28 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/data/models/response/transaksi/transaction_response_model.dart';
 import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
-import 'package:gloymoneymanagement/presentation/user/transaksi/bloc/detailTransaksi/detail_transaksi_bloc.dart';
+import 'package:gloymoneymanagement/presentation/user/transaksi/bloc/riwayatTransaksi/riwayat_transaksi_bloc.dart';
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/detail_transaksi.dart';
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/tambah_transaksi.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
 import 'package:intl/intl.dart';
 
-class RiwayatTransaksi extends StatefulWidget {
+class RiwayatTransaksi extends StatelessWidget {
   const RiwayatTransaksi({super.key});
 
   @override
-  State<RiwayatTransaksi> createState() => _RiwayatTransaksiState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => RiwayatTransaksiBloc(
+        repository: TransactionRepository(ServiceHttpClient()),
+      )..add(LoadRiwayatTransaksi()),
+      child: const _RiwayatTransaksiView(),
+    );
+  }
 }
 
-class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
-  late Future<List<TransactionResponseModel>> _futureTransactions;
-  final TransactionRepository _repository = TransactionRepository(
-    ServiceHttpClient(),
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    _futureTransactions = _loadTransactions();
-  }
-
-  Future<List<TransactionResponseModel>> _loadTransactions() async {
-    final result = await _repository.getTransactions();
-    return result.fold((error) => throw Exception(error), (data) => data);
-  }
+class _RiwayatTransaksiView extends StatelessWidget {
+  const _RiwayatTransaksiView();
 
   @override
   Widget build(BuildContext context) {
@@ -46,31 +39,41 @@ class _RiwayatTransaksiState extends State<RiwayatTransaksi> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const TambahTransaksi()),
-              );
+              ).then((value) {
+                if (value == true) {
+                  context.read<RiwayatTransaksiBloc>().add(
+                    LoadRiwayatTransaksi(),
+                  );
+                }
+              });
             },
           ),
         ],
       ),
-      body: FutureBuilder<List<TransactionResponseModel>>(
-        future: _futureTransactions,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+      body: BlocBuilder<RiwayatTransaksiBloc, RiwayatTransaksiState>(
+        builder: (context, state) {
+          if (state is RiwayatTransaksiLoading) {
             return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Gagal memuat data: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Tidak ada transaksi'));
+          } else if (state is RiwayatTransaksiError) {
+            return Center(child: Text('Gagal memuat data: ${state.message}'));
+          } else if (state is RiwayatTransaksiLoaded) {
+            final transaksi = state.transactions;
+
+            if (transaksi.isEmpty) {
+              return const Center(child: Text('Tidak ada transaksi'));
+            }
+
+            return ListView.builder(
+              itemCount: transaksi.length,
+              padding: const EdgeInsets.all(16),
+              itemBuilder: (context, index) {
+                final item = transaksi[index];
+                return _TransactionCard(item: item);
+              },
+            );
           }
 
-          final transaksi = snapshot.data!;
-          return ListView.builder(
-            itemCount: transaksi.length,
-            padding: const EdgeInsets.all(16),
-            itemBuilder: (context, index) {
-              final item = transaksi[index];
-              return _TransactionCard(item: item);
-            },
-          );
+          return const SizedBox();
         },
       ),
     );
@@ -98,20 +101,10 @@ class _TransactionCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => BlocProvider(
-              create: (_) => DetailTransaksiBloc(
-                repository: TransactionRepository(ServiceHttpClient()),
-              ),
-              child: DetailTransaksi(transaksi: item),
-            ),
-          ),
+          MaterialPageRoute(builder: (_) => DetailTransaksi(transaksi: item)),
         ).then((refresh) {
           if (refresh == true) {
-            final state = context
-                .findAncestorStateOfType<_RiwayatTransaksiState>();
-            state?._futureTransactions = state._loadTransactions();
-            state?.setState(() {});
+            context.read<RiwayatTransaksiBloc>().add(LoadRiwayatTransaksi());
           }
         });
       },

@@ -6,10 +6,12 @@ import 'package:gloymoneymanagement/presentation/user/transaksi/bloc/detailTrans
 part 'detail_transaksi_event.dart';
 part 'detail_transaksi_state.dart';
 
-class DetailTransaksiBloc extends Bloc<DetailTransaksiEvent, DetailTransaksiState> {
+class DetailTransaksiBloc
+    extends Bloc<DetailTransaksiEvent, DetailTransaksiState> {
   final TransactionRepository repository;
 
-  DetailTransaksiBloc({required this.repository}) : super(DetailTransaksiInitial()) {
+  DetailTransaksiBloc({required this.repository})
+    : super(DetailTransaksiInitial()) {
     on<DeleteTransactionRequested>(_onDeleteTransactionRequested);
   }
 
