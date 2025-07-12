@@ -8,6 +8,7 @@ import 'package:gloymoneymanagement/data/repository/menabung_repository.dart';
 import 'package:gloymoneymanagement/data/repository/pensiun_repository.dart';
 import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
 import 'package:gloymoneymanagement/presentation/user/home/pages/home_root.dart';
+import 'package:gloymoneymanagement/presentation/user/saham/saham.dart';
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/riwayat_transaksi.dart';
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/tambah_transaksi.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
@@ -358,7 +359,12 @@ class _HomeScreenState extends State<HomeScreen> {
               MaterialPageRoute(builder: (_) => const RiwayatTransaksi()),
             ).then((_) => _loadAll());
           }),
-          _homeMenuItem(Icons.bar_chart, "Portofolio", () {}),
+          _homeMenuItem(Icons.bar_chart, "Saham", () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const Saham()),
+            );
+          }),
           _homeMenuItem(
             Icons.savings,
             "Menabung",
