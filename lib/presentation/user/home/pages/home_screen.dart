@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/response/menabung/menabung_reponse_model.dart';
@@ -9,6 +10,7 @@ import 'package:gloymoneymanagement/data/repository/pensiun_repository.dart';
 import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
 import 'package:gloymoneymanagement/presentation/user/home/pages/home_root.dart';
 import 'package:gloymoneymanagement/presentation/user/saham/saham.dart';
+import 'package:gloymoneymanagement/presentation/user/transaksi/bloc/tambahTransaksi/tambah_transaksi_bloc.dart';
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/riwayat_transaksi.dart';
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/tambah_transaksi.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
@@ -407,8 +409,15 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const TambahTransaksi()),
-          ).then((_) => _loadAll());
+            MaterialPageRoute(
+              builder: (_) => BlocProvider(
+                create: (_) => TambahTransaksiBloc(
+                  repository: TransactionRepository(ServiceHttpClient()),
+                ),
+                child: const TambahTransaksi(),
+              ),
+            ),
+          );
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary800,
