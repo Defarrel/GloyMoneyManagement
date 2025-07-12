@@ -5,6 +5,7 @@ import 'package:gloymoneymanagement/core/components/custom_text_field_2.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/request/transaksi/transaction_request_model.dart';
 import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
+import 'package:gloymoneymanagement/presentation/user/transaksi/bloc/mapPage/map_page_bloc.dart';
 import 'package:gloymoneymanagement/presentation/user/transaksi/bloc/tambahTransaksi/tambah_transaksi_bloc.dart';
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/done_page.dart';
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/map_page.dart';
@@ -204,15 +205,15 @@ class _TambahTransaksiState extends State<TambahTransaksi> {
                 const SizedBox(height: 16),
                 GestureDetector(
                   onTap: () async {
-                    final selectedAddress = await Navigator.push(
+                    Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const MapPage()),
+                      MaterialPageRoute(
+                        builder: (_) => BlocProvider(
+                          create: (_) => MapPageBloc(),
+                          child: const MapPage(),
+                        ),
+                      ),
                     );
-                    if (selectedAddress != null && selectedAddress is String) {
-                      setState(
-                        () => _locationController.text = selectedAddress,
-                      );
-                    }
                   },
                   child: AbsorbPointer(
                     child: CustomTextField2(

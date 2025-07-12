@@ -46,8 +46,6 @@ class MyApp extends StatelessWidget {
 
         //Pensiun
         BlocProvider(create: (_) => MainpensiunBloc()..add(FetchMainPensiun())),
-        BlocProvider(create: (_) => TopupPensiunBloc()),
-        BlocProvider(create: (_) => WithdrawpensiunBloc()),
         BlocProvider(
           create: (_) =>
               TambahpensiunBloc(PensionRepository(ServiceHttpClient())),
