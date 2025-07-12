@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/data/models/response/transaksi/transaction_response_model.dart';
 import 'package:gloymoneymanagement/data/repository/transaksi_repository.dart';
+import 'package:gloymoneymanagement/presentation/user/transaksi/bloc/detailTransaksi/detail_transaksi_bloc.dart';
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/detail_transaksi.dart';
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/tambah_transaksi.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
@@ -96,7 +98,14 @@ class _TransactionCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => DetailTransaksi(transaksi: item)),
+          MaterialPageRoute(
+            builder: (_) => BlocProvider(
+              create: (_) => DetailTransaksiBloc(
+                repository: TransactionRepository(ServiceHttpClient()),
+              ),
+              child: DetailTransaksi(transaksi: item),
+            ),
+          ),
         ).then((refresh) {
           if (refresh == true) {
             final state = context
