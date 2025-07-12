@@ -11,13 +11,20 @@ import 'package:gloymoneymanagement/presentation/user/home/pages/home_root.dart'
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/riwayat_transaksi.dart';
 import 'package:gloymoneymanagement/presentation/user/transaksi/pages/tambah_transaksi.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _GrafikData {
+  final String label;
+  final double value;
+  _GrafikData(this.label, this.value);
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -32,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _pemasukan = 0;
   int _pengeluaran = 0;
   bool _isLoading = true;
+  int _grafikIndex = 1;
 
   @override
   void initState() {
@@ -41,20 +49,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadAll() async {
     setState(() => _isLoading = true);
-    await Future.wait([
-      _loadTransactions(),
-      _loadPension(),
-      _loadSavings(),
-    ]);
+    await Future.wait([_loadTransactions(), _loadPension(), _loadSavings()]);
     setState(() => _isLoading = false);
   }
 
   Future<void> _loadTransactions() async {
     final result = await _transactionRepo.getTransactions();
     result.fold((error) => _showError(error), (data) {
-      final pemasukan = data.where((t) => t.type.toLowerCase() == 'pemasukan')
+      final pemasukan = data
+          .where((t) => t.type.toLowerCase() == 'pemasukan')
           .fold<int>(0, (sum, t) => sum + t.amount.toInt());
-      final pengeluaran = data.where((t) => t.type.toLowerCase() == 'pengeluaran')
+      final pengeluaran = data
+          .where((t) => t.type.toLowerCase() == 'pengeluaran')
           .fold<int>(0, (sum, t) => sum + t.amount.toInt());
 
       _transactions = data;
@@ -86,6 +92,96 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildGrafik() {
+    final now = DateTime.now();
+    final currentMonth = now.month;
+    final currentYear = now.year;
+    final maxDay = DateUtils.getDaysInMonth(currentYear, currentMonth);
+
+    List<double> pemasukanHarian = List.filled(maxDay, 0);
+    List<double> pengeluaranHarian = List.filled(maxDay, 0);
+    List<double> pemasukanBulanan = List.filled(12, 0);
+    List<double> pengeluaranBulanan = List.filled(12, 0);
+
+    for (final transaksi in _transactions) {
+      final tanggal = transaksi.date;
+      if (tanggal == null) continue;
+      final amount = transaksi.amount.toDouble();
+
+      if (tanggal.year == currentYear && tanggal.month == currentMonth) {
+        final day = tanggal.day - 1;
+        if (transaksi.type.toLowerCase() == 'pemasukan') {
+          pemasukanHarian[day] += amount;
+        } else {
+          pengeluaranHarian[day] += amount;
+        }
+      }
+
+      if (tanggal.year == currentYear) {
+        final month = tanggal.month - 1;
+        if (transaksi.type.toLowerCase() == 'pemasukan') {
+          pemasukanBulanan[month] += amount;
+        } else {
+          pengeluaranBulanan[month] += amount;
+        }
+      }
+    }
+
+    List<_GrafikData> pemasukanData = [];
+    List<_GrafikData> pengeluaranData = [];
+
+    if (_grafikIndex == 0) {
+      final hariIni = DateTime.now();
+      final tujuhHariLalu = hariIni.subtract(const Duration(days: 6));
+
+      for (int i = 0; i < 7; i++) {
+        final tgl = tujuhHariLalu.add(Duration(days: i));
+
+        double pemasukan = 0;
+        double pengeluaran = 0;
+
+        for (final transaksi in _transactions) {
+          if (transaksi.date != null &&
+              transaksi.date.day == tgl.day &&
+              transaksi.date.month == tgl.month &&
+              transaksi.date.year == tgl.year) {
+            if (transaksi.type.toLowerCase() == 'pemasukan') {
+              pemasukan += transaksi.amount;
+            } else {
+              pengeluaran += transaksi.amount;
+            }
+          }
+        }
+
+        final label = "${tgl.day}";
+        pemasukanData.add(_GrafikData(label, pemasukan / 1e6));
+        pengeluaranData.add(_GrafikData(label, pengeluaran / 1e6));
+      }
+    } else {
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'Mei',
+        'Jun',
+        'Jul',
+        'Agu',
+        'Sep',
+        'Okt',
+        'Nov',
+        'Des',
+      ];
+      final bulanTerakhir = currentMonth;
+      final bulanMulai = (bulanTerakhir - 4 < 0) ? 0 : bulanTerakhir - 4;
+
+      for (int i = bulanMulai; i < bulanTerakhir; i++) {
+        pemasukanData.add(_GrafikData(months[i], pemasukanBulanan[i] / 1e6));
+        pengeluaranData.add(
+          _GrafikData(months[i], pengeluaranBulanan[i] / 1e6),
+        );
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
@@ -93,52 +189,80 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6)],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Grafik Keuangan",
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                const Text(
+                  "Grafik Keuangan",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0F0F0),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      value: _grafikIndex,
+                      iconSize: 16,
+                      items: const [
+                        DropdownMenuItem(value: 1, child: Text("Bulanan")),
+                        DropdownMenuItem(value: 0, child: Text("Harian")),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _grafikIndex = val);
+                        }
+                      },
+                      style: const TextStyle(fontSize: 12, color: Colors.black),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: 160,
-              child: BarChart(
-                BarChartData(
-                  alignment: BarChartAlignment.spaceAround,
-                  maxY: (_pemasukan > _pengeluaran ? _pemasukan : _pengeluaran).toDouble() + 1000,
-                  barTouchData: BarTouchData(enabled: false),
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          switch (value.toInt()) {
-                            case 0:
-                              return const Text("Pemasukan", style: TextStyle(fontSize: 12));
-                            case 1:
-                              return const Text("Pengeluaran", style: TextStyle(fontSize: 12));
-                            default:
-                              return const SizedBox.shrink();
-                          }
-                        },
-                      ),
+              height: 220,
+              child: SfCartesianChart(
+                legend: Legend(isVisible: true),
+                primaryXAxis: CategoryAxis(
+                  labelPlacement: LabelPlacement.onTicks,
+                  interval: 1,
+                ),
+                primaryYAxis: NumericAxis(
+                  labelFormat: '{value} Jt',
+                  numberFormat: NumberFormat.compact(),
+                ),
+                tooltipBehavior: TooltipBehavior(enable: true),
+                series: [
+                  SplineAreaSeries<_GrafikData, String>(
+                    dataSource: pemasukanData,
+                    xValueMapper: (data, _) => data.label,
+                    yValueMapper: (data, _) => data.value,
+                    name: 'Pemasukan',
+                    gradient: LinearGradient(
+                      colors: [Colors.green.shade100, Colors.green.shade400],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                     ),
                   ),
-                  borderData: FlBorderData(show: false),
-                  barGroups: [
-                    BarChartGroupData(x: 0, barRods: [
-                      BarChartRodData(toY: _pemasukan.toDouble(), color: Colors.green, width: 22),
-                    ]),
-                    BarChartGroupData(x: 1, barRods: [
-                      BarChartRodData(toY: _pengeluaran.toDouble(), color: Colors.red, width: 22),
-                    ]),
-                  ],
-                ),
+                  SplineAreaSeries<_GrafikData, String>(
+                    dataSource: pengeluaranData,
+                    xValueMapper: (data, _) => data.label,
+                    yValueMapper: (data, _) => data.value,
+                    name: 'Pengeluaran',
+                    gradient: LinearGradient(
+                      colors: [Colors.red.shade100, Colors.red.shade400],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
