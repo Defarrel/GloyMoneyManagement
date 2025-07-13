@@ -7,7 +7,6 @@ import 'package:gloymoneymanagement/services/storage_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
 import 'package:gloymoneymanagement/presentation/user/auth/pages/login_screen.dart';
-import 'package:gloymoneymanagement/data/models/response/akun/akun_response_model.dart';
 import 'package:gloymoneymanagement/data/repository/akun_repository.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
 

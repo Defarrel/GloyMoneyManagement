@@ -7,6 +7,7 @@ import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/data/models/request/akun/akun_request_model.dart';
 import 'package:gloymoneymanagement/data/repository/akun_repository.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
+import 'package:gloymoneymanagement/presentation/user/akun/pages/ganti_password.dart'; // pastikan path ini sesuai
 
 class PengaturanProfile extends StatefulWidget {
   const PengaturanProfile({super.key});
@@ -147,6 +148,26 @@ class _PengaturanProfileState extends State<PengaturanProfile> {
                                 'Simpan Perubahan',
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
+                      ),
+                    ),
+                    const SpaceHeight(16),
+                    Center(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const GantiPassword(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          "Ganti Password?",
+                          style: TextStyle(
+                            color: AppColors.primary800,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ],

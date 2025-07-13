@@ -62,9 +62,7 @@ class AkunRepository {
 
   Future<Either<String, AkunResponseModel>> getCurrentUser() async {
     try {
-      final response = await _serviceHttpClient.get(
-        'me',
-      ); 
+      final response = await _serviceHttpClient.get('me');
 
       if (response.statusCode == 200) {
         return Right(AkunResponseModel.fromJson(response.body));
@@ -99,6 +97,33 @@ class AkunRepository {
     } catch (e) {
       log("Exception during updateAkun: $e");
       return const Left("Gagal memperbarui akun.");
+    }
+  }
+
+  // Ubah password
+  Future<Either<String, String>> updatePassword(
+    int userId,
+    String newPassword,
+  ) async {
+    try {
+      log("Updating password for user ID: $userId");
+
+      final response = await _serviceHttpClient.put("users/$userId/password", {
+        "password": newPassword,
+      });
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> body = json.decode(response.body);
+        final message = body['message'] ?? "Password berhasil diubah";
+        return Right(message);
+      } else {
+        final message = _parseMessage(response.body);
+        log("Failed to update password: $message");
+        return Left(message);
+      }
+    } catch (e) {
+      log("Exception during updatePassword: $e");
+      return const Left("Gagal mengubah password.");
     }
   }
 
