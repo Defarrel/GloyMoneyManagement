@@ -4,6 +4,7 @@ import 'package:gloymoneymanagement/core/components/custom_text_field.dart';
 import 'package:gloymoneymanagement/core/constants/colors.dart';
 import 'package:gloymoneymanagement/core/components/spaces.dart';
 import 'package:gloymoneymanagement/data/models/request/auth/login_request_model.dart';
+import 'package:gloymoneymanagement/presentation/advisor/home/pages/home_root.dart';
 import 'package:gloymoneymanagement/presentation/advisor/home/pages/home_screen.dart';
 import 'package:gloymoneymanagement/presentation/user/auth/bloc/login/login_bloc.dart';
 import 'package:gloymoneymanagement/presentation/user/home/pages/home_root.dart';
@@ -115,8 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) =>
-                                          const HomeScreen(),
+                                      builder: (_) => const HomeRootAdvisor(),
                                     ),
                                   );
                                 } else {

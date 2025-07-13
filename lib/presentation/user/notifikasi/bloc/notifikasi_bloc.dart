@@ -31,6 +31,7 @@ class NotifikasiBloc extends Bloc<NotifikasiEvent, NotifikasiState> {
         (msg) => emit(NotifikasiResponded(msg)),
       );
 
+      // Reload notifications after response
       final reload = await repository.getUserInvitations();
       reload.fold(
         (err) => emit(NotifikasiError(err)),
