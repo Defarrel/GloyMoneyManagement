@@ -167,4 +167,35 @@ class AkunRepository {
       return 'Unknown error';
     }
   }
+
+  Future<Either<String, String>> uploadProfilePhoto(
+    int userId,
+    String filePath,
+  ) async {
+    try {
+      final token = await _secureStorage.read(key: "authToken");
+      final baseUrl = _serviceHttpClient.baseUrl.replaceAll(
+        '/api/',
+        '',
+      ); // Remove /api if needed
+
+      final uri = Uri.parse('$baseUrl/api/users/$userId/photo');
+
+      final request = http.MultipartRequest('PUT', uri);
+      request.headers['Authorization'] = 'Bearer $token';
+      request.files.add(await http.MultipartFile.fromPath('photo', filePath));
+
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        final resBody = await response.stream.bytesToString();
+        final url = jsonDecode(resBody)['photo_profile'];
+        return Right(url);
+      } else {
+        return const Left("Gagal upload foto");
+      }
+    } catch (e) {
+      return Left("Error: $e");
+    }
+  }
 }

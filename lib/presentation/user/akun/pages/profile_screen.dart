@@ -1,14 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:gloymoneymanagement/presentation/user/akun/pages/camera_page.dart';
-import 'package:gloymoneymanagement/presentation/user/akun/pages/pengaturan_profile.dart';
-import 'package:gloymoneymanagement/services/storage_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:gloymoneymanagement/core/components/custom_app_bar.dart';
-import 'package:gloymoneymanagement/presentation/user/auth/pages/login_screen.dart';
 import 'package:gloymoneymanagement/data/repository/akun_repository.dart';
+import 'package:gloymoneymanagement/presentation/user/akun/pages/camera_page.dart';
+import 'package:gloymoneymanagement/presentation/user/akun/pages/pengaturan_profile.dart';
+import 'package:gloymoneymanagement/presentation/user/auth/pages/login_screen.dart';
 import 'package:gloymoneymanagement/services/service_http_client.dart';
+import 'package:gloymoneymanagement/services/storage_helper.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -20,9 +20,11 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   final AkunRepository _akunRepository = AkunRepository(ServiceHttpClient());
+
   String _name = 'Memuat...';
   String _email = 'Memuat...';
   File? _profileImage;
+  String? _photoUrl;
   bool _isLoading = true;
 
   @override
@@ -33,6 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserData() async {
     final imagePath = await _storage.read(key: 'userProfilePath');
+    debugPrint('📸 Local image path: $imagePath');
 
     final result = await _akunRepository.getCurrentUser();
     result.fold(
@@ -47,9 +50,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           _name = user.name;
           _email = user.email;
-          if (imagePath != null) _profileImage = File(imagePath);
+          _profileImage = imagePath != null ? File(imagePath) : null;
+          _photoUrl = user.photoProfile;
           _isLoading = false;
         });
+
         await _storage.write(key: 'userName', value: user.name);
         await _storage.write(key: 'userEmail', value: user.email);
       },
@@ -60,6 +65,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final saved = await StorageHelper.saveImage(imageFile, 'profile_');
     await _storage.write(key: 'userProfilePath', value: saved.path);
     setState(() => _profileImage = saved);
+
+    try {
+      final userId = await _akunRepository.getUserIdFromStorage();
+      if (userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Gagal mendapatkan ID pengguna")),
+        );
+        return;
+      }
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final response = await _akunRepository.uploadProfilePhoto(
+        userId,
+        saved.path,
+      );
+      Navigator.pop(context); // Tutup loading
+
+      response.fold(
+        (error) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("Upload gagal: $error")));
+        },
+        (photoUrl) {
+          setState(() => _photoUrl = photoUrl);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Foto profil berhasil diunggah")),
+          );
+        },
+      );
+    } catch (e) {
+      Navigator.pop(context); // Tutup loading
+      debugPrint("Upload error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Terjadi kesalahan saat upload foto")),
+      );
+    }
   }
 
   Future<void> _pickImageFromGallery() async {
@@ -115,8 +162,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           TextButton(
             onPressed: () async {
-              setState(() => _profileImage = null);
               await _storage.delete(key: 'userProfilePath');
+              await _storage.delete(key: 'userPhotoUrl');
+              setState(() {
+                _profileImage = null;
+                _photoUrl = null;
+              });
               Navigator.pop(context);
             },
             child: const Text(
@@ -130,17 +181,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _logout() async {
-    await _storage.deleteAll();
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-      (route) => false,
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Konfirmasi Logout"),
+        content: const Text("Apakah kamu yakin ingin keluar dari akun?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Batal"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Logout", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
+
+    if (shouldLogout == true) {
+      await _storage.deleteAll();
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    }
+  }
+
+  bool _isValidUrl(String? url) {
+    return url != null && Uri.tryParse(url)?.hasAbsolutePath == true;
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F8),
       appBar: CustomAppBar(title: "Profil Saya", showLogo: true),
@@ -160,11 +236,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           children: [
                             CircleAvatar(
                               radius: 48,
+                              backgroundColor: Colors.grey[200],
                               backgroundImage: _profileImage != null
                                   ? FileImage(_profileImage!)
-                                  : null,
-                              backgroundColor: Colors.grey[200],
-                              child: _profileImage == null
+                                  : (_photoUrl != null && _photoUrl!.isNotEmpty
+                                        ? NetworkImage(_photoUrl!)
+                                        : null),
+
+                              child:
+                                  (_profileImage == null &&
+                                      !_isValidUrl(_photoUrl))
                                   ? const Icon(
                                       Icons.camera_alt,
                                       size: 32,
@@ -197,9 +278,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               builder: (_) => const PengaturanProfile(),
                             ),
                           );
-                          if (updated == true) {
-                            _loadUserData(); 
-                          }
+                          if (updated == true) _loadUserData();
                         },
                       ),
                       const Divider(height: 0),

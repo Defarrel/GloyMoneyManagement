@@ -5,29 +5,26 @@ class AkunResponseModel {
   final String name;
   final String email;
   final String role;
+  final String? photoProfile;
 
   AkunResponseModel({
     required this.id,
     required this.name,
     required this.email,
     required this.role,
+    this.photoProfile,
   });
 
-  factory AkunResponseModel.fromJson(String str) =>
-      AkunResponseModel.fromMap(json.decode(str));
+  factory AkunResponseModel.fromMap(Map<String, dynamic> map) {
+    return AkunResponseModel(
+      id: map['id'],
+      name: map['name'],
+      email: map['email'],
+      role: map['role'],
+      photoProfile: map['photo_profile'], 
+    );
+  }
 
-  factory AkunResponseModel.fromMap(Map<String, dynamic> json) =>
-      AkunResponseModel(
-        id: json["id"],
-        name: json["name"],
-        email: json["email"],
-        role: json["role"],
-      );
-
-  Map<String, dynamic> toMap() => {
-        "id": id,
-        "name": name,
-        "email": email,
-        "role": role,
-      };
+  factory AkunResponseModel.fromJson(String source) =>
+      AkunResponseModel.fromMap(json.decode(source));
 }
