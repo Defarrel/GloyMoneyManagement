@@ -60,11 +60,15 @@ class _DetailSavingState extends State<DetailSaving> {
               return Center(child: Text("Gagal memuat: ${state.message}"));
             } else if (state is SavingDetailLoaded) {
               final saving = state.saving;
-              final double progress = saving.currentAmount / saving.targetAmount;
+              final double progress =
+                  saving.currentAmount / saving.targetAmount;
               final percentage = (progress * 100).clamp(0, 100).toInt();
 
               return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 32,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -86,7 +90,10 @@ class _DetailSavingState extends State<DetailSaving> {
                               SizedBox(height: 4),
                               Text(
                                 "Pantau dan kelola tabungan bersama teman, pasangan atau keluarga",
-                                style: TextStyle(color: Colors.black54, fontSize: 13),
+                                style: TextStyle(
+                                  color: Colors.black54,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),
@@ -105,43 +112,146 @@ class _DetailSavingState extends State<DetailSaving> {
                         center: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text("$percentage%",
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                )),
+                            Text(
+                              "$percentage%",
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
                             const SizedBox(height: 4),
-                            const Text("Tercapai", style: TextStyle(fontSize: 14, color: Colors.black54)),
+                            const Text(
+                              "Tercapai",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ),
                     const SizedBox(height: 40),
-                    const Text("Detail Tabungan", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Detail Tabungan",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Konfirmasi'),
+                                content: const Text(
+                                  'Apakah kamu yakin ingin menghapus tabungan ini?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                    child: const Text('Batal'),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                    ),
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
+                                    child: const Text('Hapus'),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true) {
+                              print(
+                                '✅ Konfirmasi hapus tabungan ID: ${saving.id}',
+                              );
+                              try {
+                                await SavingRepository(
+                                  ServiceHttpClient(),
+                                ).deleteSaving(saving.id);
+                                print(
+                                  '✅ Tabungan berhasil dihapus dari server',
+                                );
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        "Tabungan berhasil dihapus",
+                                      ),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                print('❌ Gagal menghapus tabungan: $e');
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Gagal menghapus: $e"),
+                                    ),
+                                  );
+                                }
+                              }
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 12),
                     _infoRow("Judul", saving.title),
-                    _infoRow("Target", "Rp ${_formatRupiah(saving.targetAmount)}"),
-                    _infoRow("Terkumpul", "Rp ${_formatRupiah(saving.currentAmount)}"),
+                    _infoRow(
+                      "Target",
+                      "Rp ${_formatRupiah(saving.targetAmount)}",
+                    ),
+                    _infoRow(
+                      "Terkumpul",
+                      "Rp ${_formatRupiah(saving.currentAmount)}",
+                    ),
                     _infoRow("Deadline", _formatDate(saving.deadline)),
                     const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("Anggota Tabungan", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        const Text(
+                          "Anggota Tabungan",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                         OutlinedButton(
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => InvtSaving(savingId: saving.id)),
+                              MaterialPageRoute(
+                                builder: (_) => InvtSaving(savingId: saving.id),
+                              ),
                             );
                           },
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: AppColors.primary800),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 6,
+                            ),
                           ),
-                          child: Text("Undang", style: TextStyle(color: AppColors.primary800)),
+                          child: Text(
+                            "Undang",
+                            style: TextStyle(color: AppColors.primary800),
+                          ),
                         ),
                       ],
                     ),
@@ -150,7 +260,10 @@ class _DetailSavingState extends State<DetailSaving> {
                       (member) => ListTile(
                         leading: const CircleAvatar(
                           backgroundColor: AppColors.primary100,
-                          child: Icon(Icons.person, color: AppColors.primary800),
+                          child: Icon(
+                            Icons.person,
+                            color: AppColors.primary800,
+                          ),
                         ),
                         title: Text(member.name),
                         subtitle: Text("Rp ${_formatRupiah(member.amount)}"),
@@ -171,9 +284,14 @@ class _DetailSavingState extends State<DetailSaving> {
                             label: "Menabung",
                             color: AppColors.primary,
                             onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (_) => TopUpSaving(savingId: saving.id, userId: saving.userId),
-                              ));
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => TopUpSaving(
+                                    savingId: saving.id,
+                                    userId: saving.userId,
+                                  ),
+                                ),
+                              );
                             },
                           ),
                           _menuButton(
@@ -181,9 +299,14 @@ class _DetailSavingState extends State<DetailSaving> {
                             label: "Tarik",
                             color: AppColors.primary,
                             onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (_) => WithdrawSaving(savingId: saving.id, userId: saving.userId),
-                              ));
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => WithdrawSaving(
+                                    savingId: saving.id,
+                                    userId: saving.userId,
+                                  ),
+                                ),
+                              );
                             },
                           ),
                           _menuButton(
@@ -191,9 +314,12 @@ class _DetailSavingState extends State<DetailSaving> {
                             label: "Riwayat",
                             color: AppColors.primary,
                             onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (_) => RiwayatSaving(savingId: saving.id),
-                              ));
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      RiwayatSaving(savingId: saving.id),
+                                ),
+                              );
                             },
                           ),
                         ],
@@ -219,14 +345,20 @@ class _DetailSavingState extends State<DetailSaving> {
             flex: 3,
             child: Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
             ),
           ),
           Expanded(
             flex: 5,
             child: Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.w400, color: Colors.black),
+              style: const TextStyle(
+                fontWeight: FontWeight.w400,
+                color: Colors.black,
+              ),
             ),
           ),
         ],
@@ -252,7 +384,10 @@ class _DetailSavingState extends State<DetailSaving> {
             child: Icon(icon, color: iconColor, size: 26),
           ),
           const SizedBox(height: 6),
-          Text(label, style: const TextStyle(fontSize: 13, color: Colors.white)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 13, color: Colors.white),
+          ),
         ],
       ),
     );

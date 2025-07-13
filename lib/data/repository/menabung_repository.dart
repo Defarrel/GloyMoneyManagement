@@ -128,4 +128,11 @@ class SavingRepository {
       return const Left("Gagal mengambil riwayat menabung");
     }
   }
+
+  Future<void> deleteSaving(int id) async {
+    final res = await _serviceHttpClient.delete('savings/delete/$id');
+    if (res.statusCode != 200) {
+      throw Exception('Gagal menghapus tabungan: ${res.body}');
+    }
+  }
 }
